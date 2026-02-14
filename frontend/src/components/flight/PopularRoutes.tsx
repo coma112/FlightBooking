@@ -17,7 +17,7 @@ const PopularRoutes = () => {
       to: 'London',
       fromCode: 'BUD',
       toCode: 'LHR',
-      price: '25,900 Ft',
+      price: '25.900 Ft',
       image: '🇬🇧'
     },
     {
@@ -25,7 +25,7 @@ const PopularRoutes = () => {
       to: 'Párizs',
       fromCode: 'BUD',
       toCode: 'CDG',
-      price: '28,500 Ft',
+      price: '28.500 Ft',
       image: '🇫🇷'
     },
     {
@@ -33,7 +33,7 @@ const PopularRoutes = () => {
       to: 'Barcelona',
       fromCode: 'BUD',
       toCode: 'BCN',
-      price: '31,200 Ft',
+      price: '31.200 Ft',
       image: '🇪🇸'
     },
     {
@@ -41,7 +41,7 @@ const PopularRoutes = () => {
       to: 'Róma',
       fromCode: 'BUD',
       toCode: 'FCO',
-      price: '29,800 Ft',
+      price: '29.800 Ft',
       image: '🇮🇹'
     },
     {
@@ -49,7 +49,7 @@ const PopularRoutes = () => {
       to: 'Amszterdam',
       fromCode: 'BUD',
       toCode: 'AMS',
-      price: '27,300 Ft',
+      price: '27.300 Ft',
       image: '🇳🇱'
     },
     {
@@ -57,7 +57,7 @@ const PopularRoutes = () => {
       to: 'Bécs',
       fromCode: 'BUD',
       toCode: 'VIE',
-      price: '18,900 Ft',
+      price: '18.900 Ft',
       image: '🇦🇹'
     },
   ];
