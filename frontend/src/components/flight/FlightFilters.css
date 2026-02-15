@@ -1,0 +1,346 @@
+.flight-filters {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: sticky;
+  top: 2rem;
+}
+
+.filters-header {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filters-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.reset-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.filter-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+}
+
+.filter-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.label-icon {
+  font-size: 1rem;
+  color: #fbbf24;
+}
+
+.time-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.time-slot {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Space Mono', monospace;
+}
+
+.time-slot:hover {
+  border-color: #2c5282;
+  background: #f1f5f9;
+}
+
+.time-slot.active {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  border-color: #2c5282;
+  color: white;
+}
+
+.slot-icon {
+  font-size: 1.5rem;
+  color: #fbbf24;
+}
+
+.time-slot.active .slot-icon {
+  color: #fbbf24;
+}
+
+.slot-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.slot-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.time-slot.active .slot-label {
+  color: white;
+}
+
+.slot-time {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.time-slot.active .slot-time {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.price-input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.price-input-group label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.price-input-group input {
+  font-family: 'Space Mono', monospace;
+  padding: 0.625rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  transition: border-color 0.2s ease;
+}
+
+.price-input-group input:focus {
+  outline: none;
+  border-color: #2c5282;
+}
+
+.currency {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.separator {
+  font-family: 'Space Mono', monospace;
+  color: #9ca3af;
+  margin-top: 1.5rem;
+}
+
+.price-range {
+  position: relative;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+}
+
+.price-range input[type="range"] {
+  position: absolute;
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  pointer-events: none;
+  --webkit-appearance: none;
+}
+
+.price-range input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: all;
+  width: 18px;
+  height: 18px;
+  background: #2c5282;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.price-range input[type="range"]::-webkit-slider-thumb:hover {
+  background: #1e3a5f;
+  transform: scale(1.2);
+}
+
+.airline-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.airline-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.625rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.airline-checkbox:hover {
+  background: #f8fafc;
+}
+
+.airline-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.airline-checkbox input[type="checkbox"]:checked + .checkbox-custom {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  border-color: #2c5282;
+}
+
+.airline-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
+  content: '✓';
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.airline-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.875rem;
+  color: #1e3a5f;
+  font-weight: 500;
+}
+
+.seats-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.seats-btn {
+  font-family: 'Space Mono', monospace;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.seats-btn:hover {
+  border-color: #2c5282;
+  background: #f1f5f9;
+}
+
+.seats-btn.active {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  color: white;
+  border-color: #2c5282;
+}
+
+.active-filters {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-top: 2px solid #fbbf24;
+}
+
+.active-count {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #92400e;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 1024px) {
+  .flight-filters {
+    position: static;
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-header {
+    padding: 1rem;
+  }
+
+  .filters-title {
+    font-size: 1.25rem;
+  }
+
+  .filter-section {
+    padding: 1rem;
+  }
+}

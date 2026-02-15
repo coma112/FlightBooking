@@ -9,14 +9,16 @@ import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import { RiGlobalLine } from "react-icons/ri";
 import { GiFlexibleStar } from "react-icons/gi";
 
+interface HomePageProps {
+  onSearch: () => void;
+}
 
-const HomePage = () => {
+const HomePage = ({ onSearch }: HomePageProps) => {
   return (
     <div className="home-page">
       <Navbar />
       
       <main>
-        {/* Hero Section */}
         <section className="hero-section">
           <div className="hero-overlay"></div>
           <div className="hero-content">
@@ -28,15 +30,13 @@ const HomePage = () => {
             </p>
             
             <div className="search-form-container">
-              <FlightSearchForm />
+              <FlightSearchForm onSearch={onSearch} />
             </div>
           </div>
         </section>
 
-        {/* Popular Routes Section */}
         <PopularRoutes />
 
-        {/* Features Section */}
         <section className="features-section">
           <div className="features-container">
             <h2 className="section-title">Miért válasszon minket?</h2>
@@ -81,7 +81,6 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Stats Section */}
         <section className="stats-section">
           <div className="stats-container">
             <div className="stat-item">

@@ -3,8 +3,11 @@ import './FlightSearchForm.css';
 import { MdFlightLand, MdFlightTakeoff, MdDateRange, MdEventSeat } from "react-icons/md";
 import { IoMdPerson, IoMdSearch } from "react-icons/io";
 
+interface FlightSearchFormProps {
+  onSearch?: () => void;
+}
 
-const FlightSearchForm = () => {
+const FlightSearchForm = ({ onSearch }: FlightSearchFormProps) => {
   const [formData, setFormData] = useState({
     departureAirport: '',
     arrivalAirport: '',
@@ -29,8 +32,10 @@ const FlightSearchForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Keresési adatok:', formData);
-    // Itt majd API hívás lesz
-    alert('Járatok keresése: ' + JSON.stringify(formData, null, 2));
+    
+    if (onSearch) {
+      onSearch();
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
