@@ -1,6 +1,6 @@
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
-import { FaHome, FaPrint, FaPlane, FaUser, FaEnvelope, FaPhone, FaPassport, FaCalendar, FaInfoCircle } from 'react-icons/fa';
+import { FaHome, FaPrint, FaPlane, FaUser, FaEnvelope, FaPhone, FaPassport, FaCalendar, FaInfoCircle, FaCheck } from 'react-icons/fa';
 import { MdFlightTakeoff, MdFlightLand, MdEventSeat } from 'react-icons/md';
 import './ConfirmationPage.css';
 import type { BookingData } from "../types/booking";
@@ -79,7 +79,7 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                 <div className="confirmation-container">
                     <div className="success-header">
                         <div className="success-icon">
-                            <span className="checkmark">✓</span>
+                            <span className="checkmark"><FaCheck /></span>
                         </div>
                         <h1 className="success-title">Sikeres foglalás!</h1>
                         <p className="success-subtitle">
