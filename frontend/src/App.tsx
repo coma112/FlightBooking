@@ -4,6 +4,7 @@ import FlightListPage from './pages/FlightListPage';
 import BookingPage from './pages/BookingPage';
 import './App.css';
 import type { BookingData } from './types/booking';
+import ConfirmationPage from './pages/ConfirmationPage';
 
 type Page = 'home' | 'flights' | 'booking' | 'confirmation';
 
@@ -55,6 +56,13 @@ function App() {
     navigateTo('flights');
   };
 
+  const handleBackToHome = () => {
+    setSelectedFlight(null);
+    setSelectedClass('ECONOMY');
+    setBookingData(null);
+    navigateTo('home');
+  };
+
   if (currentPage === 'booking' && selectedFlight) {
     return (
       <BookingPage
@@ -67,47 +75,13 @@ function App() {
     );
   }
 
-  if (currentPage === 'confirmation' && bookingData) {
+  if (currentPage === 'confirmation' && bookingData && selectedFlight) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        flexDirection: 'column',
-        gap: '2rem',
-        padding: '2rem'
-      }}>
-        <h1 style={{ color: '#059669', fontSize: '3rem' }}>✓ Foglalás sikeres!</h1>
-        <div style={{ 
-          background: 'white', 
-          padding: '2rem', 
-          borderRadius: '12px',
-          maxWidth: '600px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-        }}>
-          <h2>Foglalási adatok</h2>
-          <p><strong>Járat:</strong> {selectedFlight?.flightNumber}</p>
-          <p><strong>Név:</strong> {bookingData.lastName} {bookingData.firstName}</p>
-          <p><strong>Email:</strong> {bookingData.email}</p>
-          <p><strong>Osztály:</strong> {bookingData.seatClass}</p>
-          <p><strong>Végösszeg:</strong> {bookingData.totalPrice.toLocaleString('hu-HU')} Ft</p>
-        </div>
-        <button 
-          onClick={() => navigateTo('home')}
-          style={{
-            padding: '1rem 2rem',
-            background: '#0078D4',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            cursor: 'pointer'
-          }}
-        >
-          Vissza a főoldalra
-        </button>
-      </div>
+      <ConfirmationPage 
+        bookingData={bookingData}
+        flight={selectedFlight}
+        onBackToHome={handleBackToHome}
+      />
     );
   }
 
