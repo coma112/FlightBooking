@@ -2,11 +2,12 @@ import { useState } from 'react';
 import HomePage from './pages/HomePage';
 import FlightListPage from './pages/FlightListPage';
 import BookingPage from './pages/BookingPage';
+import MyBookingsPage from './pages/MyBookingsPage';
 import './App.css';
 import type { BookingData } from './types/booking';
 import ConfirmationPage from './pages/ConfirmationPage';
 
-type Page = 'home' | 'flights' | 'booking' | 'confirmation';
+type Page = 'home' | 'flights' | 'booking' | 'confirmation' | 'my-bookings';
 
 interface Flight {
   id: string;
@@ -40,6 +41,8 @@ function App() {
     setCurrentPage(page);
     window.scrollTo(0, 0);
   };
+
+  (window as unknown as Record<string, unknown>).__navigateTo = navigateTo;
 
   const handleBookingClick = (flight: Flight, seatClass: 'ECONOMY' | 'BUSINESS' | 'FIRST') => {
     setSelectedFlight(flight);
@@ -87,6 +90,10 @@ function App() {
 
   if (currentPage === 'flights') {
     return <FlightListPage onBookingClick={handleBookingClick} />;
+  }
+
+  if (currentPage === 'my-bookings') {
+    return <MyBookingsPage />
   }
 
   return <HomePage onSearch={() => navigateTo('flights')} />;
