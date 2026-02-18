@@ -3,38 +3,67 @@ import './FlightSearchForm.css';
 import { MdFlightLand, MdFlightTakeoff, MdDateRange, MdEventSeat } from "react-icons/md";
 import { IoMdPerson, IoMdSearch } from "react-icons/io";
 
-interface FlightSearchFormProps {
-  onSearch?: () => void;
+export interface SearchParams {
+  departureAirportCode: string;
+  arrivalAirportCode: string;
+  departureDate: string;
+  passengers: number;
+  seatClass: 'ECONOMY' | 'BUSINESS' | 'FIRST';
 }
 
-const FlightSearchForm = ({ onSearch }: FlightSearchFormProps) => {
-  const [formData, setFormData] = useState({
-    departureAirport: '',
-    arrivalAirport: '',
-    departureDate: '',
-    passengers: 1,
-    seatClass: 'ECONOMY'
-  });
+interface FlightSearchFormProps {
+  onSearch?: (params: SearchParams) => void;
+  loading?: boolean;
+}
 
-  const airports = [
-    { code: 'BUD', name: 'Budapest Liszt Ferenc', city: 'Budapest' },
-    { code: 'LHR', name: 'London Heathrow', city: 'London' },
-    { code: 'CDG', name: 'Paris Charles de Gaulle', city: 'Párizs' },
-    { code: 'FRA', name: 'Frankfurt Airport', city: 'Frankfurt' },
-    { code: 'AMS', name: 'Amsterdam Schiphol', city: 'Amszterdam' },
-    { code: 'BCN', name: 'Barcelona El Prat', city: 'Barcelona' },
-    { code: 'FCO', name: 'Roma Fiumicino', city: 'Róma' },
-    { code: 'VIE', name: 'Vienna International', city: 'Bécs' },
-    { code: 'MUC', name: 'Munich Airport', city: 'München' },
-    { code: 'MAD', name: 'Madrid Barajas', city: 'Madrid' },
-  ];
+const AIRPORTS = [
+  { code: 'BUD', name: 'Budapest Liszt Ferenc', city: 'Budapest' },
+  { code: 'LHR', name: 'London Heathrow', city: 'London' },
+  { code: 'CDG', name: 'Paris Charles de Gaulle', city: 'Párizs' },
+  { code: 'FRA', name: 'Frankfurt Airport', city: 'Frankfurt' },
+  { code: 'AMS', name: 'Amsterdam Schiphol', city: 'Amszterdam' },
+  { code: 'BCN', name: 'Barcelona El Prat', city: 'Barcelona' },
+  { code: 'FCO', name: 'Roma Fiumicino', city: 'Róma' },
+  { code: 'VIE', name: 'Vienna International', city: 'Bécs' },
+  { code: 'MUC', name: 'Munich Airport', city: 'München' },
+  { code: 'MAD', name: 'Madrid Barajas', city: 'Madrid' },
+  { code: 'WAW', name: 'Warsaw Chopin', city: 'Varsó' },
+  { code: 'PRG', name: 'Prague Václav Havel', city: 'Prága' },
+  { code: 'ZRH', name: 'Zurich Airport', city: 'Zürich' },
+  { code: 'CPH', name: 'Copenhagen Airport', city: 'Koppenhága' },
+  { code: 'ARN', name: 'Stockholm Arlanda', city: 'Stockholm' },
+  { code: 'HEL', name: 'Helsinki Airport', city: 'Helsinki' },
+  { code: 'DUB', name: 'Dublin Airport', city: 'Dublin' },
+  { code: 'ATH', name: 'Athens International', city: 'Athén' },
+  { code: 'IST', name: 'Istanbul Airport', city: 'Isztambul' },
+  { code: 'DXB', name: 'Dubai International', city: 'Dubai' },
+  { code: 'JFK', name: 'New York JFK', city: 'New York' },
+  { code: 'LAX', name: 'Los Angeles International', city: 'Los Angeles' },
+  { code: 'BKK', name: 'Bangkok Suvarnabhumi', city: 'Bangkok' },
+  { code: 'SIN', name: 'Singapore Changi', city: 'Szingapúr' },
+  { code: 'NRT', name: 'Tokyo Narita', city: 'Tokió' },
+  { code: 'SYD', name: 'Sydney Airport', city: 'Sydney' },
+];
+
+const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+  const [formData, setFormData] = useState<SearchParams>({
+    departureAirportCode: 'BUD',
+    arrivalAirportCode: 'LHR',
+    departureDate: tomorrowStr,
+    passengers: 1,
+    seatClass: 'ECONOMY',
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Keresési adatok:', formData);
     
     if (onSearch) {
-      onSearch();
+      onSearch(formData);
     }
   };
 
@@ -57,12 +86,12 @@ const FlightSearchForm = ({ onSearch }: FlightSearchFormProps) => {
           <select
             id="departureAirport"
             name="departureAirport"
-            value={formData.departureAirport}
+            value={formData.departureAirportCode}
             onChange={handleChange}
             required
           >
             <option value="">Válasszon repülőteret</option>
-            {airports.map(airport => (
+            {AIRPORTS.map(airport => (
               <option key={airport.code} value={airport.code}>
                 {airport.code} - {airport.city} ({airport.name})
               </option>
@@ -78,12 +107,12 @@ const FlightSearchForm = ({ onSearch }: FlightSearchFormProps) => {
           <select
             id="arrivalAirport"
             name="arrivalAirport"
-            value={formData.arrivalAirport}
+            value={formData.arrivalAirportCode}
             onChange={handleChange}
             required
           >
             <option value="">Válasszon repülőteret</option>
-            {airports.map(airport => (
+            {AIRPORTS.map(airport => (
               <option key={airport.code} value={airport.code}>
                 {airport.code} - {airport.city} ({airport.name})
               </option>

@@ -2,6 +2,8 @@ package net.coma112.flightbooking.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import net.coma112.flightbooking.dto.*;
+import net.coma112.flightbooking.exception.BusinessException;
+import net.coma112.flightbooking.exception.ResourceNotFoundException;
 import net.coma112.flightbooking.model.*;
 import net.coma112.flightbooking.model.enums.BookingStatus;
 import net.coma112.flightbooking.model.enums.SeatClass;
@@ -9,7 +11,6 @@ import net.coma112.flightbooking.repository.*;
 import net.coma112.flightbooking.service.BookingService;
 import net.coma112.flightbooking.service.PassengerService;
 import net.coma112.flightbooking.service.PricingService;
-import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,13 +34,13 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingResponse createBooking(BookingRequest request) {
         Flight flight = flightRepository.findById(request.getFlightId())
-                .orElseThrow(() -> new RuntimeException("Flight nincs: " + request.getFlightId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Nem található a járat: " + request.getFlightId()));
 
         Seat seat = seatRepository.findByFlightAndSeatNumber(flight, request.getSeatNumber())
-                .orElseThrow(() -> new RuntimeException("Seat nincs: " + request.getSeatNumber()));
+                .orElseThrow(() -> new ResourceNotFoundException("Nem található az ülés: " + request.getSeatNumber()));
 
         if (!seat.isAvailable()) {
-            throw new RuntimeException("Seat " + request.getSeatNumber() + " mán foglalt");
+            throw new BusinessException("A(z) " + request.getSeatNumber() + " ülés már foglalt");
         }
 
         Passenger passenger = passengerService.createOrUpdatePassenger(request.getPassengerDetails());
@@ -70,7 +71,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse getBookingByReference(String reference) {
         Booking booking = bookingRepository.findByBookingReference(reference)
-                .orElseThrow(() -> new RuntimeException("Booking nincs: " + reference));
+                .orElseThrow(() -> new ResourceNotFoundException("Nem található a foglalás: " + reference));
 
         return convertToBookingResponse(booking);
     }
@@ -79,10 +80,10 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public void cancelBooking(String reference) {
         Booking booking = bookingRepository.findByBookingReference(reference)
-                .orElseThrow(() -> new RuntimeException("Booking nincs: " + reference));
+                .orElseThrow(() -> new ResourceNotFoundException("Nem található a foglalás: " + reference));
 
         if (booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new RuntimeException("Booking már cancellelve");
+            throw new BusinessException("A foglalás már le van mondva!");
         }
 
         Seat seat = booking.getSeat();
@@ -97,10 +98,10 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingResponse confirmBooking(String reference) {
         Booking booking = bookingRepository.findByBookingReference(reference)
-                .orElseThrow(() -> new RuntimeException("Booking nincs: " + reference));
+                .orElseThrow(() -> new ResourceNotFoundException("Nem található a foglalás: " + reference));
 
         if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new RuntimeException("Csak pending!");
+            throw new BusinessException("Csak PENDING státuszú foglalás erősíthető meg!");
         }
 
         booking.setStatus(BookingStatus.CONFIRMED);
@@ -145,7 +146,6 @@ public class BookingServiceImpl implements BookingService {
         return response;
     }
 
-    @Contract("_ -> new")
     private @NonNull AirportDTO convertToAirportDTO(@NonNull Airport airport) {
         return new AirportDTO(
                 airport.getIataCode(),

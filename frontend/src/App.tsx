@@ -6,6 +6,7 @@ import MyBookingsPage from './pages/MyBookingsPage';
 import './App.css';
 import type { BookingData } from './types/booking';
 import ConfirmationPage from './pages/ConfirmationPage';
+import type { SearchParams } from './components/flight/FlightSearchForm';
 
 type Page = 'home' | 'flights' | 'booking' | 'confirmation' | 'my-bookings';
 
@@ -34,8 +35,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
   const [selectedClass, setSelectedClass] = useState<'ECONOMY' | 'BUSINESS' | 'FIRST'>('ECONOMY');
-  const [departureDate] = useState<string>('2026-03-15'); 
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
+  const [searchParams, setSearchParams] = useState<SearchParams | null>(null);
 
   const navigateTo = (page: Page) => {
     setCurrentPage(page);
@@ -43,6 +44,11 @@ function App() {
   };
 
   (window as unknown as Record<string, unknown>).__navigateTo = navigateTo;
+
+  const handleSearch = (params: SearchParams) => {
+    setSearchParams(params);
+    navigateTo('flights');
+  };
 
   const handleBookingClick = (flight: Flight, seatClass: 'ECONOMY' | 'BUSINESS' | 'FIRST') => {
     setSelectedFlight(flight);
@@ -71,7 +77,7 @@ function App() {
       <BookingPage
         flight={selectedFlight}
         seatClass={selectedClass}
-        departureDate={departureDate}
+        departureDate={searchParams?.departureDate ?? selectedFlight.departureTime.split('T')[0]}
         onConfirm={handleBookingConfirm}
         onCancel={handleBookingCancel}
       />
@@ -80,7 +86,7 @@ function App() {
 
   if (currentPage === 'confirmation' && bookingData && selectedFlight) {
     return (
-      <ConfirmationPage 
+      <ConfirmationPage
         bookingData={bookingData}
         flight={selectedFlight}
         onBackToHome={handleBackToHome}
@@ -89,14 +95,19 @@ function App() {
   }
 
   if (currentPage === 'flights') {
-    return <FlightListPage onBookingClick={handleBookingClick} />;
+    return (
+      <FlightListPage
+        onBookingClick={handleBookingClick}
+        initialSearch={searchParams ?? undefined}
+      />
+    );
   }
 
   if (currentPage === 'my-bookings') {
-    return <MyBookingsPage />
+    return <MyBookingsPage />;
   }
 
-  return <HomePage onSearch={() => navigateTo('flights')} />;
+  return <HomePage onSearch={handleSearch} />;
 }
 
 export default App;

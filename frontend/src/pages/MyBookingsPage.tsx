@@ -11,92 +11,9 @@ import { MdFlightTakeoff, MdFlightLand, MdEventSeat } from 'react-icons/md';
 import { FaArrowRight } from 'react-icons/fa6';
 import { formatPrice } from '../utils/priceCalculation';
 import { formatDate, formatTime } from '../utils/dateUtils';
+import { bookingApi, type BookingResponse } from '../services/api';
 
 type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
-
-interface MockBooking {
-  bookingReference: string;
-  status: BookingStatus;
-  lastName: string;
-  firstName: string;
-  email: string;
-  phone: string;
-  passportNumber: string;
-  birthDate: string;
-  flightId: string;
-  flightNumber: string;
-  airline: string;
-  departureAirport: { name: string; code: string; city: string };
-  arrivalAirport: { name: string; code: string; city: string };
-  departureTime: string;
-  arrivalTime: string;
-  seatClass: 'ECONOMY' | 'BUSINESS' | 'FIRST';
-  totalPrice: number;
-  bookingDate: string;
-}
-
-const MOCK_BOOKINGS: Record<string, MockBooking> = {
-  'SKY001': {
-    bookingReference: 'SKY001',
-    status: 'PENDING',
-    lastName: 'Kovács',
-    firstName: 'Anna',
-    email: 'anna.kovacs@example.com',
-    phone: '+36 30 123 4567',
-    passportNumber: 'AB1234567',
-    birthDate: '1990-05-15',
-    flightId: 'LH1234',
-    flightNumber: 'LH1234',
-    airline: 'Lufthansa',
-    departureAirport: { name: 'Budapest Liszt Ferenc', code: 'BUD', city: 'Budapest' },
-    arrivalAirport: { name: 'London Heathrow', code: 'LHR', city: 'London' },
-    departureTime: '2026-03-15T08:30:00',
-    arrivalTime: '2026-03-15T10:45:00',
-    seatClass: 'ECONOMY',
-    totalPrice: 22015,
-    bookingDate: '2026-02-10T12:00:00',
-  },
-  'SKY002': {
-    bookingReference: 'SKY002',
-    status: 'CONFIRMED',
-    lastName: 'Nagy',
-    firstName: 'Péter',
-    email: 'peter.nagy@example.com',
-    phone: '+36 70 987 6543',
-    passportNumber: 'CD9876543',
-    birthDate: '1985-11-22',
-    flightId: 'LH5678',
-    flightNumber: 'LH5678',
-    airline: 'Lufthansa',
-    departureAirport: { name: 'Budapest Liszt Ferenc', code: 'BUD', city: 'Budapest' },
-    arrivalAirport: { name: 'London Heathrow', code: 'LHR', city: 'London' },
-    departureTime: '2026-03-15T14:15:00',
-    arrivalTime: '2026-03-15T16:30:00',
-    seatClass: 'BUSINESS',
-    totalPrice: 81515,
-    bookingDate: '2026-02-01T09:30:00',
-  },
-  'SKY003': {
-    bookingReference: 'SKY003',
-    status: 'CANCELLED',
-    lastName: 'Szabó',
-    firstName: 'Mária',
-    email: 'maria.szabo@example.com',
-    phone: '+36 20 555 1234',
-    passportNumber: 'EF5555555',
-    birthDate: '1978-03-08',
-    flightId: 'LH9012',
-    flightNumber: 'LH9012',
-    airline: 'Lufthansa',
-    departureAirport: { name: 'Budapest Liszt Ferenc', code: 'BUD', city: 'Budapest' },
-    arrivalAirport: { name: 'London Heathrow', code: 'LHR', city: 'London' },
-    departureTime: '2026-03-15T19:45:00',
-    arrivalTime: '2026-03-15T22:00:00',
-    seatClass: 'FIRST',
-    totalPrice: 152415,
-    bookingDate: '2026-01-25T16:45:00',
-  },
-};
 
 const STATUS_LABELS: Record<BookingStatus, string> = {
   PENDING: 'Függőben',
@@ -113,9 +30,10 @@ const CLASS_LABELS: Record<string, string> = {
 const MyBookingsPage = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [booking, setBooking] = useState<MockBooking | null>(null);
+  const [booking, setBooking] = useState<BookingResponse | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const handleSearch = async () => {
     if (!code.trim()) return;
@@ -123,15 +41,14 @@ const MyBookingsPage = () => {
     setNotFound(false);
     setBooking(null);
 
-    await new Promise(r => setTimeout(r, 900));
-
-    const found = MOCK_BOOKINGS[code.trim().toUpperCase()];
-    if (found) {
-      setBooking({ ...found });
-    } else {
+    try {
+      const result = await bookingApi.getBooking(code.trim().toUpperCase());
+      setBooking(result);
+    } catch (err) {
       setNotFound(true);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -140,26 +57,34 @@ const MyBookingsPage = () => {
 
   const handleConfirm = async () => {
     if (!booking) return;
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
-    setBooking(prev => prev ? { ...prev, status: 'CONFIRMED' } : null);
-    if (booking.bookingReference in MOCK_BOOKINGS) {
-      MOCK_BOOKINGS[booking.bookingReference].status = 'CONFIRMED';
+    setActionLoading(true);
+    try {
+      const updated = await bookingApi.confirmBooking(booking.bookingReference);
+      setBooking(updated);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Hiba történt');
+    } finally {
+      setActionLoading(false);
     }
-    setLoading(false);
   };
 
   const handleCancelConfirm = async () => {
     if (!booking) return;
     setShowCancelModal(false);
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
-    setBooking(prev => prev ? { ...prev, status: 'CANCELLED' } : null);
-    if (booking.bookingReference in MOCK_BOOKINGS) {
-      MOCK_BOOKINGS[booking.bookingReference].status = 'CANCELLED';
+    setActionLoading(true);
+    try {
+      await bookingApi.cancelBooking(booking.bookingReference);
+      setBooking(prev => prev ? { ...prev, status: 'CANCELLED' } : null);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Hiba történt');
+    } finally {
+      setActionLoading(false);
     }
-    setLoading(false);
   };
+
+  const passengerFullName = booking
+    ? `${booking.passenger.lastName} ${booking.passenger.firstName}`
+    : '';
 
   return (
     <div className="my-bookings-page">
@@ -186,14 +111,14 @@ const MyBookingsPage = () => {
                   id="booking-code"
                   className={`booking-code-input ${notFound ? 'input-error' : ''}`}
                   type="text"
-                  placeholder="SKY001"
+                  placeholder="ABC123"
                   value={code}
                   onChange={e => {
                     setCode(e.target.value.toUpperCase());
                     setNotFound(false);
                   }}
                   onKeyDown={handleKeyDown}
-                  maxLength={10}
+                  maxLength={6}
                   disabled={loading}
                 />
               </div>
@@ -218,7 +143,7 @@ const MyBookingsPage = () => {
             )}
 
             <p className="search-hint">
-              Próbálja ki: SKY001 (Függőben) • SKY002 (Visszaigazolva) • SKY003 (Lemondva)
+              A foglalási kód az e-mailben elküldött visszaigazolásban szerepel.
             </p>
           </div>
         </div>
@@ -232,7 +157,7 @@ const MyBookingsPage = () => {
                   {booking.status === 'CONFIRMED' && <FaCheck />}
                   {booking.status === 'PENDING' && <FaInfoCircle />}
                   {booking.status === 'CANCELLED' && <FaTimes />}
-                  {STATUS_LABELS[booking.status]}
+                  {STATUS_LABELS[booking.status as BookingStatus]}
                 </span>
               </div>
 
@@ -253,32 +178,28 @@ const MyBookingsPage = () => {
                   <h3 className="result-section-title">Járat adatok</h3>
                   <div className="result-row">
                     <span className="result-label"><FaPlane className="result-icon" /> Járatszám</span>
-                    <span className="result-value">{booking.flightNumber}</span>
-                  </div>
-                  <div className="result-row">
-                    <span className="result-label"><FaPlane className="result-icon" /> Légitársaság</span>
-                    <span className="result-value">{booking.airline}</span>
+                    <span className="result-value">{booking.flight.flightNumber}</span>
                   </div>
 
                   <div className="flight-route-display">
                     <div className="route-airport">
                       <MdFlightTakeoff style={{ fontSize: '1.5rem', color: '#2c5282' }} />
-                      <div className="route-airport-code">{booking.departureAirport.code}</div>
-                      <div className="route-airport-city">{booking.departureAirport.city}</div>
-                      <div className="route-airport-time">{formatTime(booking.departureTime)}</div>
+                      <div className="route-airport-code">{booking.flight.departureAirport.iataCode}</div>
+                      <div className="route-airport-city">{booking.flight.departureAirport.city}</div>
+                      <div className="route-airport-time">{formatTime(booking.flight.departureTime)}</div>
                     </div>
                     <div className="route-arrow-icon"><FaArrowRight /></div>
                     <div className="route-airport">
                       <MdFlightLand style={{ fontSize: '1.5rem', color: '#2c5282' }} />
-                      <div className="route-airport-code">{booking.arrivalAirport.code}</div>
-                      <div className="route-airport-city">{booking.arrivalAirport.city}</div>
-                      <div className="route-airport-time">{formatTime(booking.arrivalTime)}</div>
+                      <div className="route-airport-code">{booking.flight.arrivalAirport.iataCode}</div>
+                      <div className="route-airport-city">{booking.flight.arrivalAirport.city}</div>
+                      <div className="route-airport-time">{formatTime(booking.flight.arrivalTime)}</div>
                     </div>
                   </div>
 
                   <div className="result-row" style={{ marginTop: '1rem' }}>
                     <span className="result-label"><FaCalendar className="result-icon" /> Indulás dátuma</span>
-                    <span className="result-value">{formatDate(booking.departureTime)}</span>
+                    <span className="result-value">{formatDate(booking.flight.departureTime)}</span>
                   </div>
                 </div>
 
@@ -286,31 +207,31 @@ const MyBookingsPage = () => {
                   <h3 className="result-section-title">Utas adatok</h3>
                   <div className="result-row">
                     <span className="result-label"><FaUser className="result-icon" /> Név</span>
-                    <span className="result-value">{booking.lastName} {booking.firstName}</span>
+                    <span className="result-value">{passengerFullName}</span>
                   </div>
                   <div className="result-row">
                     <span className="result-label"><FaEnvelope className="result-icon" /> Email</span>
-                    <span className="result-value">{booking.email}</span>
+                    <span className="result-value">{booking.passenger.email}</span>
                   </div>
                   <div className="result-row">
-                    <span className="result-label"><FaPhone className="result-icon" /> Telefonszám</span>
-                    <span className="result-value">{booking.phone}</span>
+                    <span className="result-label"><FaPhone className="result-icon" /> Telefon</span>
+                    <span className="result-value">{booking.passenger.phoneNumber}</span>
                   </div>
                   <div className="result-row">
-                    <span className="result-label"><FaPassport className="result-icon" /> Útlevélszám</span>
-                    <span className="result-value">{booking.passportNumber}</span>
+                    <span className="result-label"><FaPassport className="result-icon" /> Útlevél</span>
+                    <span className="result-value">{booking.passenger.passportNumber}</span>
                   </div>
                   <div className="result-row">
                     <span className="result-label"><FaCalendar className="result-icon" /> Születési dátum</span>
-                    <span className="result-value">{formatDate(booking.birthDate)}</span>
+                    <span className="result-value">{formatDate(booking.passenger.dateOfBirth)}</span>
                   </div>
                 </div>
 
                 <div className="result-section">
                   <h3 className="result-section-title">Osztály és ár</h3>
                   <div className="result-row">
-                    <span className="result-label"><MdEventSeat className="result-icon" /> Osztály</span>
-                    <span className="result-value">{CLASS_LABELS[booking.seatClass]}</span>
+                    <span className="result-label"><MdEventSeat className="result-icon" /> Szék</span>
+                    <span className="result-value">{booking.seatNumber}</span>
                   </div>
                   <div className="total-price-display">
                     <span className="total-price-label">Végösszeg:</span>
@@ -322,15 +243,15 @@ const MyBookingsPage = () => {
               {booking.status !== 'CANCELLED' && (
                 <div className="action-buttons-row">
                   {booking.status === 'PENDING' && (
-                    <button className="confirm-btn" onClick={handleConfirm} disabled={loading}>
-                      {loading ? <FaSpinner className="search-spinner" /> : <FaCheck />}
+                    <button className="confirm-btn" onClick={handleConfirm} disabled={actionLoading}>
+                      {actionLoading ? <FaSpinner className="search-spinner" /> : <FaCheck />}
                       Megerősítés
                     </button>
                   )}
                   <button
                     className="cancel-booking-btn"
                     onClick={() => setShowCancelModal(true)}
-                    disabled={loading}
+                    disabled={actionLoading}
                   >
                     <FaTimes /> Lemondás
                   </button>

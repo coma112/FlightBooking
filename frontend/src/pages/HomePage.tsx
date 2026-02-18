@@ -1,6 +1,6 @@
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
-import FlightSearchForm from '../components/flight/FlightSearchForm';
+import FlightSearchForm, { type SearchParams } from '../components/flight/FlightSearchForm';
 import PopularRoutes from '../components/flight/PopularRoutes';
 import './HomePage.css';
 import { MdOutlinePriceCheck, MdContactPhone } from "react-icons/md";
@@ -10,7 +10,7 @@ import { RiGlobalLine } from "react-icons/ri";
 import { GiFlexibleStar } from "react-icons/gi";
 
 interface HomePageProps {
-  onSearch: () => void;
+  onSearch: (params: SearchParams) => void;
 }
 
 const HomePage = ({ onSearch }: HomePageProps) => {

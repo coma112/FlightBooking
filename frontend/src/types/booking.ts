@@ -12,6 +12,7 @@ export interface BookingData extends BookingFormData {
   seatClass: 'ECONOMY' | 'BUSINESS' | 'FIRST';
   totalPrice: number;
   bookingDate: string;
+  bookingReference?: string;
 }
 
 export interface PriceBreakdown {

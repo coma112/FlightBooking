@@ -5,7 +5,7 @@ import BookingForm from '../components/booking/BookingForm';
 import BookingSummary from '../components/booking/BookingSummary';
 import './BookingPage.css';
 import type { BookingFormData, BookingData } from '../types/booking';
-import { calculatePrice } from '../utils/priceCalculation';
+import { bookingApi, flightApi } from '../services/api';
 
 interface Flight {
   id: string;
@@ -36,36 +36,58 @@ interface BookingPageProps {
   onCancel: () => void;
 }
 
-const BookingPage = ({ 
-  flight, 
-  seatClass, 
-  departureDate, 
+const BookingPage = ({
+  flight,
+  seatClass,
+  departureDate,
   onConfirm,
-  onCancel 
+  onCancel,
 }: BookingPageProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [seatError, setSeatError] = useState<string | null>(null);
 
   const handleFormSubmit = async (formData: BookingFormData) => {
     setIsSubmitting(true);
+    setSeatError(null);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const seats = await flightApi.getAvailableSeats(Number(flight.id), seatClass);
 
-      const basePrice = flight.prices[seatClass];
-      const priceBreakdown = calculatePrice(basePrice, seatClass, departureDate);
+      if (!seats || seats.length === 0) {
+        setSeatError(`Sajnos nincs szabad ${seatClass} szék ezen a járaton!`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const chosenSeat = seats[0];
+
+      const bookingResponse = await bookingApi.createBooking({
+        flightId: Number(flight.id),
+        passengerDetails: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phoneNumber: formData.phone,
+          passportNumber: formData.passportNumber,
+          dateOfBirth: formData.birthDate,
+        },
+        seatNumber: chosenSeat.seatNumber,
+      });
 
       const bookingData: BookingData = {
         ...formData,
         flightId: flight.id,
         seatClass,
-        totalPrice: priceBreakdown.total,
-        bookingDate: new Date().toISOString()
+        totalPrice: Number(bookingResponse.totalPrice),
+        bookingDate: bookingResponse.bookingDate,
+        bookingReference: bookingResponse.bookingReference,
       };
 
       onConfirm(bookingData);
-    } catch (error) {
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Hiba történt a foglalás során';
+      setSeatError(msg);
       console.error('Booking error:', error);
-      alert('Hiba történt a foglalás során. Kérjük, próbálja újra!');
     } finally {
       setIsSubmitting(false);
     }
@@ -90,14 +112,28 @@ const BookingPage = ({
 
         <div className="booking-container">
           <div className="booking-form-section">
-            <BookingForm 
+            {seatError && (
+              <div style={{
+                background: '#fef2f2',
+                border: '2px solid #fca5a5',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem',
+                fontFamily: 'monospace',
+                color: '#dc2626',
+                fontWeight: 700,
+              }}>
+                ⚠️ {seatError}
+              </div>
+            )}
+            <BookingForm
               onSubmit={handleFormSubmit}
               loading={isSubmitting}
             />
           </div>
 
           <aside className="booking-summary-section">
-            <BookingSummary 
+            <BookingSummary
               flight={flight}
               seatClass={seatClass}
               departureDate={departureDate}

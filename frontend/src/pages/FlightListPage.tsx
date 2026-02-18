@@ -4,115 +4,44 @@ import Footer from '../components/common/Footer';
 import FlightCard from '../components/flight/FlightCard';
 import FlightFilters from '../components/flight/FlightFilters';
 import FlightDetailsModal from '../components/flight/FlightDetailsModal';
+import FlightSearchForm, { type SearchParams } from '../components/flight/FlightSearchForm';
 import './FlightListPage.css';
-import { FaSort } from 'react-icons/fa';
+import { FaSort, FaSpinner } from 'react-icons/fa';
 import { GrDocumentMissing } from "react-icons/gr";
 import { FaArrowRight } from "react-icons/fa6";
 import { getTimeOfDay } from '../utils/flightUtils';
+import { flightApi, type FlightResponse } from '../services/api';
 
-// Mock data
-const mockFlights = [
-  {
-    id: 'LH1234',
-    flightNumber: 'LH1234',
-    departureAirport: { name: 'Budapest Liszt Ferenc', code: 'BUD', city: 'Budapest' },
-    arrivalAirport: { name: 'London Heathrow', code: 'LHR', city: 'London' },
-    departureTime: '2026-03-15T08:30:00',
-    arrivalTime: '2026-03-15T10:45:00',
-    aircraftType: 'Airbus A320',
+function toCardFlight(f: FlightResponse) {
+  return {
+    id: String(f.id),
+    flightNumber: f.flightNumber,
+    departureAirport: {
+      name: f.departureAirport.name,
+      code: f.departureAirport.iataCode,
+      city: f.departureAirport.city,
+    },
+    arrivalAirport: {
+      name: f.arrivalAirport.name,
+      code: f.arrivalAirport.iataCode,
+      city: f.arrivalAirport.city,
+    },
+    departureTime: f.departureTime,
+    arrivalTime: f.arrivalTime,
+    aircraftType: 'N/A',
     prices: {
-      ECONOMY: 25900,
-      BUSINESS: 89900,
-      FIRST: 159900
+      ECONOMY: f.prices?.ECONOMY ?? 0,
+      BUSINESS: f.prices?.BUSINESS ?? 0,
+      FIRST: f.prices?.FIRST ?? 0,
     },
     availableSeats: {
-      ECONOMY: 45,
-      BUSINESS: 8,
-      FIRST: 2
+      ECONOMY: f.availableSeats?.ECONOMY ?? 0,
+      BUSINESS: f.availableSeats?.BUSINESS ?? 0,
+      FIRST: f.availableSeats?.FIRST ?? 0,
     },
-    airline: 'Lufthansa'
-  },
-  {
-    id: 'LH5678',
-    flightNumber: 'LH5678',
-    departureAirport: { name: 'Budapest Liszt Ferenc', code: 'BUD', city: 'Budapest' },
-    arrivalAirport: { name: 'London Heathrow', code: 'LHR', city: 'London' },
-    departureTime: '2026-03-15T14:15:00',
-    arrivalTime: '2026-03-15T16:30:00',
-    aircraftType: 'Boeing 737',
-    prices: {
-      ECONOMY: 28500,
-      BUSINESS: 95900,
-      FIRST: 0
-    },
-    availableSeats: {
-      ECONOMY: 12,
-      BUSINESS: 3,
-      FIRST: 0
-    },
-    airline: 'Lufthansa'
-  },
-  {
-    id: 'LH9012',
-    flightNumber: 'LH9012',
-    departureAirport: { name: 'Budapest Liszt Ferenc', code: 'BUD', city: 'Budapest' },
-    arrivalAirport: { name: 'London Heathrow', code: 'LHR', city: 'London' },
-    departureTime: '2026-03-15T19:45:00',
-    arrivalTime: '2026-03-15T22:00:00',
-    aircraftType: 'Airbus A321',
-    prices: {
-      ECONOMY: 31200,
-      BUSINESS: 102900,
-      FIRST: 179900
-    },
-    availableSeats: {
-      ECONOMY: 67,
-      BUSINESS: 12,
-      FIRST: 4
-    },
-    airline: 'Lufthansa'
-  },
-  {
-    id: 'LH3456',
-    flightNumber: 'LH3456',
-    departureAirport: { name: 'Budapest Liszt Ferenc', code: 'BUD', city: 'Budapest' },
-    arrivalAirport: { name: 'London Heathrow', code: 'LHR', city: 'London' },
-    departureTime: '2026-03-15T06:00:00',
-    arrivalTime: '2026-03-15T08:15:00',
-    aircraftType: 'Airbus A319',
-    prices: {
-      ECONOMY: 22900,
-      BUSINESS: 79900,
-      FIRST: 0
-    },
-    availableSeats: {
-      ECONOMY: 89,
-      BUSINESS: 6,
-      FIRST: 0
-    },
-    airline: 'Lufthansa'
-  },
-  {
-    id: 'LH7890',
-    flightNumber: 'LH7890',
-    departureAirport: { name: 'Budapest Liszt Ferenc', code: 'BUD', city: 'Budapest' },
-    arrivalAirport: { name: 'London Heathrow', code: 'LHR', city: 'London' },
-    departureTime: '2026-03-15T16:30:00',
-    arrivalTime: '2026-03-15T18:45:00',
-    aircraftType: 'Boeing 777',
-    prices: {
-      ECONOMY: 29900,
-      BUSINESS: 119900,
-      FIRST: 249900
-    },
-    availableSeats: {
-      ECONOMY: 124,
-      BUSINESS: 28,
-      FIRST: 8
-    },
-    airline: 'Lufthansa'
-  }
-];
+    airline: 'Unknown',
+  };
+}
 
 interface Filters {
   timeOfDay: string[];
@@ -124,63 +53,94 @@ interface Filters {
 type SortOption = 'price' | 'departure' | 'duration';
 
 interface FlightListPageProps {
-  onBookingClick: (flight: typeof mockFlights[0], seatClass: 'ECONOMY' | 'BUSINESS' | 'FIRST') => void;
+  onBookingClick: (
+    flight: ReturnType<typeof toCardFlight>,
+    seatClass: 'ECONOMY' | 'BUSINESS' | 'FIRST'
+  ) => void;
+  initialSearch?: SearchParams;
 }
 
-const FlightListPage = ({ onBookingClick }: FlightListPageProps) => {
-  const [flights] = useState(mockFlights);
-  const [selectedFlight, setSelectedFlight] = useState<typeof mockFlights[0] | null>(null);
+const FlightListPage = ({ onBookingClick, initialSearch }: FlightListPageProps) => {
+  const [flights, setFlights] = useState<ReturnType<typeof toCardFlight>[]>([]);
+  const [selectedFlight, setSelectedFlight] = useState<ReturnType<typeof toCardFlight> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [currentSearch, setCurrentSearch] = useState<SearchParams | null>(initialSearch ?? null);
+
   const [filters, setFilters] = useState<Filters>({
     timeOfDay: [],
-    priceRange: [0, 300000],
+    priceRange: [0, 1000000],
     airlines: [],
-    minSeats: 0
+    minSeats: 0,
   });
   const [sortBy, setSortBy] = useState<SortOption>('price');
 
+  const handleSearch = async (params: SearchParams) => {
+    setLoading(true);
+    setError(null);
+    setHasSearched(true);
+    setCurrentSearch(params);
+
+    try {
+      const results = await flightApi.searchFlights({
+        departureAirportCode: params.departureAirportCode,
+        arrivalAirportCode: params.arrivalAirportCode,
+        departureDate: params.departureDate,
+        passengers: params.passengers,
+        seatClass: params.seatClass,
+      });
+      setFlights(results.map(toCardFlight));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Hiba történt a keresés során';
+      setError(msg);
+      setFlights([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getDuration = (departure: string, arrival: string) => {
-    const dep = new Date(departure);
-    const arr = new Date(arrival);
-    return (arr.getTime() - dep.getTime()) / (1000 * 60);
+    return (new Date(arrival).getTime() - new Date(departure).getTime()) / (1000 * 60);
   };
 
   const filteredFlights = flights.filter(flight => {
     if (filters.timeOfDay.length > 0) {
-      const timeOfDay = getTimeOfDay(flight.departureTime);
-      if (!filters.timeOfDay.includes(timeOfDay)) return false;
+      const tod = getTimeOfDay(flight.departureTime);
+      if (!filters.timeOfDay.includes(tod)) return false;
     }
-
-    const lowestPrice = Math.min(...Object.values(flight.prices).filter(p => p > 0));
-    if (lowestPrice < filters.priceRange[0] || lowestPrice > filters.priceRange[1]) {
-      return false;
-    }
-
-    if (filters.airlines.length > 0 && !filters.airlines.includes(flight.airline)) {
-      return false;
-    }
-
+    const lowestPrice = Math.min(
+      ...Object.values(flight.prices).filter(p => p > 0)
+    );
+    if (lowestPrice < filters.priceRange[0] || lowestPrice > filters.priceRange[1]) return false;
+    if (filters.airlines.length > 0 && !filters.airlines.includes(flight.airline)) return false;
     const totalSeats = Object.values(flight.availableSeats).reduce((a, b) => a + b, 0);
     if (totalSeats < filters.minSeats) return false;
-
     return true;
   });
 
   const sortedFlights = [...filteredFlights].sort((a, b) => {
-    switch (sortBy) {
-      case 'price':
-        const priceA = Math.min(...Object.values(a.prices).filter(p => p > 0));
-        const priceB = Math.min(...Object.values(b.prices).filter(p => p > 0));
-        return priceA - priceB;
-      case 'departure':
-        return new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime();
-      case 'duration':
-        const durationA = getDuration(a.departureTime, a.arrivalTime);
-        const durationB = getDuration(b.departureTime, b.arrivalTime);
-        return durationA - durationB;
-      default:
-        return 0;
+    if (sortBy === 'price') {
+      return (
+        Math.min(...Object.values(a.prices).filter(p => p > 0)) -
+        Math.min(...Object.values(b.prices).filter(p => p > 0))
+      );
     }
+    if (sortBy === 'departure') {
+      return new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime();
+    }
+    if (sortBy === 'duration') {
+      return getDuration(a.departureTime, a.arrivalTime) - getDuration(b.departureTime, b.arrivalTime);
+    }
+    return 0;
   });
+
+  const depCity = currentSearch
+    ? currentSearch.departureAirportCode
+    : 'Indulás';
+  const arrCity = currentSearch
+    ? currentSearch.arrivalAirportCode
+    : 'Érkezés';
 
   return (
     <div className="flight-list-page">
@@ -188,77 +148,99 @@ const FlightListPage = ({ onBookingClick }: FlightListPageProps) => {
 
       <main className="flight-list-main">
         <div className="search-header">
-          <div className="search-info">
+          <div className="search-info" style={{ marginBottom: '1.5rem' }}>
             <h1 className="route-title">
-              Budapest <span className="arrow"><FaArrowRight /></span> London
+              {depCity} <span className="arrow"><FaArrowRight /></span> {arrCity}
             </h1>
-            <p className="search-details">
-              <span className="detail-item">2026. március 15.</span>
-              <span className="separator">•</span>
-              <span className="detail-item">1 utas</span>
-              <span className="separator">•</span>
-              <span className="detail-item">Economy</span>
-            </p>
-            <div className="results-count">
-              <span className="count-number">{sortedFlights.length}</span> járat található
-            </div>
+            {currentSearch && (
+              <p className="search-details">
+                <span className="detail-item">{currentSearch.departureDate}</span>
+                <span className="separator">•</span>
+                <span className="detail-item">{currentSearch.passengers} utas</span>
+                <span className="separator">•</span>
+                <span className="detail-item">{currentSearch.seatClass}</span>
+              </p>
+            )}
+            {hasSearched && !loading && (
+              <div className="results-count">
+                <span className="count-number">{sortedFlights.length}</span> járat található
+              </div>
+            )}
           </div>
+
+          <FlightSearchForm onSearch={handleSearch} loading={loading} />
         </div>
 
         <div className="content-container">
           <aside className="filters-sidebar">
-            <FlightFilters
-              filters={filters}
-              onFilterChange={setFilters}
-            />
+            <FlightFilters filters={filters} onFilterChange={setFilters} />
           </aside>
 
           <div className="flights-content">
-            <div className="sort-controls">
-              <div className="sort-label">
-                <FaSort />
-                Rendezés:
-              </div>
-              <div className="sort-buttons">
-                <button
-                  className={`sort-btn ${sortBy === 'price' ? 'active' : ''}`}
-                  onClick={() => setSortBy('price')}
-                >
-                  Legolcsóbb
-                </button>
-                <button
-                  className={`sort-btn ${sortBy === 'departure' ? 'active' : ''}`}
-                  onClick={() => setSortBy('departure')}
-                >
-                  Legkorábbi indulás
-                </button>
-                <button
-                  className={`sort-btn ${sortBy === 'duration' ? 'active' : ''}`}
-                  onClick={() => setSortBy('duration')}
-                >
-                  Legrövidebb út
-                </button>
-              </div>
-            </div>
-
-            <div className="flights-list">
-              {sortedFlights.map(flight => (
-                <FlightCard
-                  key={flight.id}
-                  flight={flight}
-                  onDetailsClick={() => setSelectedFlight(flight)}
-                  onBookingClick={onBookingClick}
-                />
-              ))}
-
-              {sortedFlights.length === 0 && (
-                <div className="no-results">
-                  <div className="no-results-icon"><GrDocumentMissing /></div>
-                  <h3>Nincs találat</h3>
-                  <p>Próbálja meg módosítani a szűrési feltételeket</p>
+            {sortedFlights.length > 0 && (
+              <div className="sort-controls">
+                <div className="sort-label">
+                  <FaSort /> Rendezés:
                 </div>
-              )}
-            </div>
+                <div className="sort-buttons">
+                  {(['price', 'departure', 'duration'] as SortOption[]).map(opt => (
+                    <button
+                      key={opt}
+                      className={`sort-btn ${sortBy === opt ? 'active' : ''}`}
+                      onClick={() => setSortBy(opt)}
+                    >
+                      {opt === 'price' ? 'Legolcsóbb' : opt === 'departure' ? 'Legkorábbi indulás' : 'Legrövidebb út'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {loading && (
+              <div className="no-results">
+                <div style={{ fontSize: '3rem', color: '#2c5282', marginBottom: '1rem' }}>
+                  <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />
+                </div>
+                <h3>Járatok keresése...</h3>
+                <p>Kérjük, várjon egy pillanatot</p>
+              </div>
+            )}
+
+            {error && !loading && (
+              <div className="no-results">
+                <div className="no-results-icon">⚠️</div>
+                <h3>Hiba történt</h3>
+                <p>{error}</p>
+              </div>
+            )}
+
+            {!hasSearched && !loading && (
+              <div className="no-results">
+                <div className="no-results-icon">✈️</div>
+                <h3>Keressen járatot</h3>
+                <p>Adja meg az indulási és érkezési repteret, majd kattintson a keresés gombra</p>
+              </div>
+            )}
+
+            {!loading && !error && hasSearched && (
+              <div className="flights-list">
+                {sortedFlights.map(flight => (
+                  <FlightCard
+                    key={flight.id}
+                    flight={flight}
+                    onDetailsClick={() => setSelectedFlight(flight)}
+                    onBookingClick={onBookingClick}
+                  />
+                ))}
+                {sortedFlights.length === 0 && (
+                  <div className="no-results">
+                    <div className="no-results-icon"><GrDocumentMissing /></div>
+                    <h3>Nincs találat</h3>
+                    <p>Próbálja meg módosítani a keresési feltételeket vagy a szűrőket</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </main>
