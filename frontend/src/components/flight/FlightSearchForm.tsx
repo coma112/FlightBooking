@@ -60,8 +60,6 @@ const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Keresési adatok:', formData);
-    
     if (onSearch) {
       onSearch(formData);
     }
@@ -71,21 +69,22 @@ const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) 
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'passengers' ? parseInt(value) : value
+      [name]: name === 'passengers' ? parseInt(value) : value,
     }));
   };
 
   return (
     <form className="flight-search-form" onSubmit={handleSubmit}>
       <div className="form-grid">
+
         <div className="form-group">
-          <label htmlFor="departureAirport">
+          <label htmlFor="departureAirportCode">
             <span className="icon"><MdFlightTakeoff /></span>
             Indulási repülőtér
           </label>
           <select
-            id="departureAirport"
-            name="departureAirport"
+            id="departureAirportCode"
+            name="departureAirportCode"
             value={formData.departureAirportCode}
             onChange={handleChange}
             required
@@ -100,13 +99,13 @@ const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) 
         </div>
 
         <div className="form-group">
-          <label htmlFor="arrivalAirport">
+          <label htmlFor="arrivalAirportCode">
             <span className="icon"><MdFlightLand /></span>
             Érkezési repülőtér
           </label>
           <select
-            id="arrivalAirport"
-            name="arrivalAirport"
+            id="arrivalAirportCode"
+            name="arrivalAirportCode"
             value={formData.arrivalAirportCode}
             onChange={handleChange}
             required
@@ -175,11 +174,12 @@ const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) 
         </div>
 
         <div className="form-group submit-group">
-          <button type="submit" className="search-button">
+          <button type="submit" className="search-button" disabled={loading}>
             <span className="icon"><IoMdSearch /></span>
-            Járatok keresése
+            {loading ? 'Keresés...' : 'Járatok keresése'}
           </button>
         </div>
+
       </div>
     </form>
   );

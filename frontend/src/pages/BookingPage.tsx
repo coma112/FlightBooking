@@ -3,9 +3,11 @@ import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import BookingForm from '../components/booking/BookingForm';
 import BookingSummary from '../components/booking/BookingSummary';
+import SeatSelector from '../components/booking/SeatSelector';
 import './BookingPage.css';
 import type { BookingFormData, BookingData } from '../types/booking';
-import { bookingApi, flightApi } from '../services/api';
+import { bookingApi } from '../services/api';
+import type { SeatResponse } from '../services/api';
 
 interface Flight {
   id: string;
@@ -45,37 +47,37 @@ const BookingPage = ({
 }: BookingPageProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [seatError, setSeatError] = useState<string | null>(null);
+  const [showSeatSelector, setShowSeatSelector] = useState(false);
+  const [currentFormData, setCurrentFormData] = useState<BookingFormData | null>(null);
 
-  const handleFormSubmit = async (formData: BookingFormData) => {
+  const handleFormSubmit = (formData: BookingFormData) => {
+    setSeatError(null);
+    setCurrentFormData(formData);
+    setShowSeatSelector(true);
+  };
+
+  const handleSeatConfirm = async (seat: SeatResponse) => {
+    if (!currentFormData) return;
+    setShowSeatSelector(false);
     setIsSubmitting(true);
     setSeatError(null);
 
     try {
-      const seats = await flightApi.getAvailableSeats(Number(flight.id), seatClass);
-
-      if (!seats || seats.length === 0) {
-        setSeatError(`Sajnos nincs szabad ${seatClass} szék ezen a járaton!`);
-        setIsSubmitting(false);
-        return;
-      }
-
-      const chosenSeat = seats[0];
-
       const bookingResponse = await bookingApi.createBooking({
         flightId: Number(flight.id),
         passengerDetails: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phoneNumber: formData.phone,
-          passportNumber: formData.passportNumber,
-          dateOfBirth: formData.birthDate,
+          firstName: currentFormData.firstName,
+          lastName: currentFormData.lastName,
+          email: currentFormData.email,
+          phoneNumber: currentFormData.phone,
+          passportNumber: currentFormData.passportNumber,
+          dateOfBirth: currentFormData.birthDate,
         },
-        seatNumber: chosenSeat.seatNumber,
+        seatNumber: seat.seatNumber,
       });
 
       const bookingData: BookingData = {
-        ...formData,
+        ...currentFormData,
         flightId: flight.id,
         seatClass,
         totalPrice: Number(bookingResponse.totalPrice),
@@ -123,7 +125,7 @@ const BookingPage = ({
                 color: '#dc2626',
                 fontWeight: 700,
               }}>
-                ⚠️ {seatError}
+                {seatError}
               </div>
             )}
             <BookingForm
@@ -143,6 +145,18 @@ const BookingPage = ({
       </main>
 
       <Footer />
+
+      {showSeatSelector && (
+        <SeatSelector
+          flightId={Number(flight.id)}
+          flightNumber={flight.flightNumber}
+          departureCode={flight.departureAirport.code}
+          arrivalCode={flight.arrivalAirport.code}
+          seatClass={seatClass}
+          onConfirm={handleSeatConfirm}
+          onClose={() => setShowSeatSelector(false)}
+        />
+      )}
     </div>
   );
 };
