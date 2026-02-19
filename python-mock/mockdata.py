@@ -1,5 +1,3 @@
-# most majd csinálok egy mock data generáló scriptet:)
-
 import psycopg2
 import random
 import string
