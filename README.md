@@ -47,6 +47,7 @@ npm run dev
 Levideóztam a fejlesztésemet és utamat, hogy később tanulni tudjak belőle.
 0 effort van a videókban, úgy éreztem hogy felveszem és felvettem.
 
+- [6. Videó](https://youtu.be/gnltEyXmwdk) - SeatSelector Addon
 - [5. Videó](https://youtu.be/_Ev8G_iSq6I) - API & CORS
 - [4. Videó](https://youtu.be/74ZMrw0w7_0) - My Bookings Page
 - [3. Videó](https://youtu.be/-UsZ7uY9pKQ) - Confirmation Page

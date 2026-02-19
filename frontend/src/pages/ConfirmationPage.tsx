@@ -40,13 +40,7 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
         window.print();
     };
 
-    const generateBookingReference = () => {
-        const date = new Date().getTime().toString(36).toUpperCase();
-        const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-        return `${date}${random}`;
-    };
-
-    const bookingReference = generateBookingReference();
+    const bookingReference = bookingData.bookingReference ?? '—';
 
     return (
         <div className="confirmation-page">
@@ -77,7 +71,9 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                                         <FaInfoCircle className="label-icon" />
                                         Foglalási azonosító
                                     </span>
-                                    <span className="detail-value">{bookingReference}</span>
+                                    <span className="detail-value" style={{ letterSpacing: '2px', fontSize: '1.1rem' }}>
+                                        {bookingReference}
+                                    </span>
                                 </div>
                                 <div className="detail-row">
                                     <span className="detail-label">
@@ -216,9 +212,11 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                                 Fontos információk
                             </h3>
                             <p className="notice-text">
-                                Kérjük, érkezzen legalább 2 órával az indulás előtt a repülőtérre. 
-                                A jegyet és az útlevelét tartsa kéznél. A foglalási visszaigazolást 
+                                Kérjük, érkezzen legalább 2 órával az indulás előtt a repülőtérre.
+                                A jegyet és az útlevelét tartsa kéznél. A foglalási visszaigazolást
                                 elküldtük a megadott email címre ({bookingData.email}).
+                                <br /><br />
+                                <strong>Foglalási kód: {bookingReference}</strong> – ezzel tud a "Foglalásaim" oldalon visszakeresni.
                             </p>
                         </div>
 

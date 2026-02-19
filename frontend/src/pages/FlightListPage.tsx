@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import FlightCard from '../components/flight/FlightCard';
@@ -39,7 +39,7 @@ function toCardFlight(f: FlightResponse) {
       BUSINESS: f.availableSeats?.BUSINESS ?? 0,
       FIRST: f.availableSeats?.FIRST ?? 0,
     },
-    airline: 'Unknown',
+    airline: 'SkyBooker Airlines',
   };
 }
 
@@ -75,6 +75,14 @@ const FlightListPage = ({ onBookingClick, initialSearch }: FlightListPageProps) 
     minSeats: 0,
   });
   const [sortBy, setSortBy] = useState<SortOption>('price');
+
+  const didAutoSearch = useRef(false);
+  useEffect(() => {
+    if (initialSearch && !didAutoSearch.current) {
+      didAutoSearch.current = true;
+      handleSearch(initialSearch);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = async (params: SearchParams) => {
     setLoading(true);
@@ -135,12 +143,8 @@ const FlightListPage = ({ onBookingClick, initialSearch }: FlightListPageProps) 
     return 0;
   });
 
-  const depCity = currentSearch
-    ? currentSearch.departureAirportCode
-    : 'Indulás';
-  const arrCity = currentSearch
-    ? currentSearch.arrivalAirportCode
-    : 'Érkezés';
+  const depCity = currentSearch ? currentSearch.departureAirportCode : 'Indulás';
+  const arrCity = currentSearch ? currentSearch.arrivalAirportCode : 'Érkezés';
 
   return (
     <div className="flight-list-page">
@@ -168,7 +172,11 @@ const FlightListPage = ({ onBookingClick, initialSearch }: FlightListPageProps) 
             )}
           </div>
 
-          <FlightSearchForm onSearch={handleSearch} loading={loading} />
+          <FlightSearchForm
+            onSearch={handleSearch}
+            loading={loading}
+            initialValues={currentSearch ?? undefined}
+          />
         </div>
 
         <div className="content-container">
@@ -251,6 +259,7 @@ const FlightListPage = ({ onBookingClick, initialSearch }: FlightListPageProps) 
         <FlightDetailsModal
           flight={selectedFlight}
           onClose={() => setSelectedFlight(null)}
+          onBookingClick={onBookingClick}
         />
       )}
     </div>

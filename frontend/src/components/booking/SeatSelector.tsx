@@ -8,36 +8,40 @@ type SeatClass = 'ECONOMY' | 'BUSINESS' | 'FIRST';
 type FilterClass = SeatClass | 'ALL';
 
 interface SeatSelectorProps {
-  flightId: number;
-  flightNumber: string;
-  departureCode: string;
-  arrivalCode: string;
-  seatClass: SeatClass;
-  onConfirm: (seat: SeatResponse) => void;
-  onClose: () => void;
+  flightId: number;   
+  flightNumber: string;   
+  departureCode: string; 
+  arrivalCode: string;    
+  seatClass: SeatClass;       
+  onConfirm: (seat: SeatResponse) => void; 
+  onClose: () => void;      
 }
 
 const CLASS_COLUMNS: Record<SeatClass, string[]> = {
-  FIRST:    ['A', 'C', 'D', 'F'],           // 2-2  (széles ülések, 4 cols)
-  BUSINESS: ['A', 'C', 'D', 'F'],           // 2-2
-  ECONOMY:  ['A', 'B', 'C', 'D', 'E', 'F'] // 3-3
+  FIRST:    ['A', 'C', 'D', 'F'],           // 2-2 (első osztály, széles ülések)
+  BUSINESS: ['A', 'C', 'D', 'F'],           // 2-2 (business)
+  ECONOMY:  ['A', 'B', 'C', 'D', 'E', 'F']  // 3-3 (economy)
 };
 
 const AISLE_AFTER: Record<SeatClass, string> = {
-  FIRST: 'C', BUSINESS: 'C', ECONOMY: 'C'
+  FIRST: 'C',      // A-C után folyosó, majd D-F
+  BUSINESS: 'C',   // ugyanaz
+  ECONOMY: 'C'     // A-B-C után folyosó, D-E-F
 };
 
 const EMERGENCY_ROWS: Record<SeatClass, number[]> = {
-  FIRST: [], BUSINESS: [], ECONOMY: [15, 27]
+  FIRST: [], 
+  BUSINESS: [], 
+  ECONOMY: [15, 27]
 };
 
 interface SeatCell {
   seatNumber: string;
-  col: string;
-  row: number;
+  col: string;      
+  row: number;       
   seatClass: SeatClass;
-  available: boolean;
-  price: number;
+  available: boolean; 
+  price: number;     
 }
 
 function buildSeatMap(seats: SeatResponse[]): Map<string, SeatCell> {
@@ -45,8 +49,8 @@ function buildSeatMap(seats: SeatResponse[]): Map<string, SeatCell> {
   for (const s of seats) {
     const match = s.seatNumber.match(/^(\d+)([A-F])$/);
     if (!match) continue;
-    const row = parseInt(match[1]);
-    const col = match[2];
+    const row = parseInt(match[1]);  
+    const col = match[2];           
     map.set(s.seatNumber, {
       seatNumber: s.seatNumber,
       col,
@@ -65,6 +69,7 @@ function getRowRanges(seats: SeatResponse[]): { cls: SeatClass; minRow: number; 
     BUSINESS: { min: Infinity, max: -Infinity },
     ECONOMY:  { min: Infinity, max: -Infinity },
   };
+  
   for (const s of seats) {
     const match = s.seatNumber.match(/^(\d+)/);
     if (!match) continue;
@@ -72,13 +77,16 @@ function getRowRanges(seats: SeatResponse[]): { cls: SeatClass; minRow: number; 
     if (r < ranges[s.seatClass].min) ranges[s.seatClass].min = r;
     if (r > ranges[s.seatClass].max) ranges[s.seatClass].max = r;
   }
+  
   return (['FIRST', 'BUSINESS', 'ECONOMY'] as SeatClass[])
     .filter(c => ranges[c].min !== Infinity)
     .map(c => ({ cls: c, minRow: ranges[c].min, maxRow: ranges[c].max }));
 }
 
 const CLASS_LABEL: Record<SeatClass, string> = {
-  FIRST: 'FIRST CLASS', BUSINESS: 'BUSINESS', ECONOMY: 'ECONOMY'
+  FIRST: 'FIRST CLASS', 
+  BUSINESS: 'BUSINESS', 
+  ECONOMY: 'ECONOMY'
 };
 
 const SeatSelector = ({
@@ -90,8 +98,8 @@ const SeatSelector = ({
   onConfirm,
   onClose,
 }: SeatSelectorProps) => {
-  const [allSeats, setAllSeats] = useState<SeatResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [allSeats, setAllSeats] = useState<SeatResponse[]>([]); 
+  const [loading, setLoading] = useState(true);                 
   const [selected, setSelected] = useState<string | null>(null);
   const [filterClass, setFilterClass] = useState<FilterClass>(seatClass);
 
@@ -111,6 +119,7 @@ const SeatSelector = ({
     };
     fetchAll();
   }, [flightId]);
+
 
   const seatMap = useMemo(() => buildSeatMap(allSeats), [allSeats]);
   const rowRanges = useMemo(() => getRowRanges(allSeats), [allSeats]);
@@ -157,6 +166,16 @@ const SeatSelector = ({
 
   const selectedCell = selected ? (seatMap.get(selected) ?? null) : null;
 
+  const sortedRows = useMemo(() =>
+    [...rowsGrouped.keys()].sort((a, b) => a - b),
+    [rowsGrouped]
+  );
+
+  const existingClasses = useMemo(() =>
+    rowRanges.map(r => r.cls),
+    [rowRanges]
+  );
+
   const handleSeatClick = (cell: SeatCell) => {
     if (!cell.available) return;
     setSelected(prev => prev === cell.seatNumber ? null : cell.seatNumber);
@@ -167,16 +186,6 @@ const SeatSelector = ({
     const seat = allSeats.find(s => s.seatNumber === selectedCell.seatNumber);
     if (seat) onConfirm(seat);
   };
-
-  const sortedRows = useMemo(() =>
-    [...rowsGrouped.keys()].sort((a, b) => a - b),
-    [rowsGrouped]
-  );
-
-  const existingClasses = useMemo(() =>
-    rowRanges.map(r => r.cls),
-    [rowRanges]
-  );
 
   const shownSections = new Set<SeatClass>();
 
@@ -309,6 +318,7 @@ const SeatSelector = ({
                                 <div className="aisle-line" />
                               </div>
                             )}
+                            
                             <button
                               key={cell.seatNumber}
                               className={`seat-btn ${seatCls}`}

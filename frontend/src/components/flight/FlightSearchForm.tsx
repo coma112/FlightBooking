@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './FlightSearchForm.css';
 import { MdFlightLand, MdFlightTakeoff, MdDateRange, MdEventSeat } from "react-icons/md";
 import { IoMdPerson, IoMdSearch } from "react-icons/io";
+import { flightApi } from '../../services/api';
 
 export interface SearchParams {
   departureAirportCode: string;
@@ -14,6 +15,7 @@ export interface SearchParams {
 interface FlightSearchFormProps {
   onSearch?: (params: SearchParams) => void;
   loading?: boolean;
+  initialValues?: SearchParams;
 }
 
 const AIRPORTS = [
@@ -45,24 +47,58 @@ const AIRPORTS = [
   { code: 'SYD', name: 'Sydney Airport', city: 'Sydney' },
 ];
 
-const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) => {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+const FALLBACK: SearchParams = {
+  departureAirportCode: 'BUD',
+  arrivalAirportCode: 'LHR',
+  departureDate: (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  })(),
+  passengers: 1,
+  seatClass: 'ECONOMY',
+};
 
-  const [formData, setFormData] = useState<SearchParams>({
-    departureAirportCode: 'BUD',
-    arrivalAirportCode: 'LHR',
-    departureDate: tomorrowStr,
-    passengers: 1,
-    seatClass: 'ECONOMY',
-  });
+const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSearchFormProps) => {
+  const [formData, setFormData] = useState<SearchParams>(initialValues ?? FALLBACK);
+  // amíg az API hívás fut (csak ha nincs initialValues)
+  const [prefilling, setPrefilling] = useState(!initialValues);
+
+  useEffect(() => {
+    if (initialValues) return;
+
+    const fetchFirstFlight = async () => {
+      try {
+        for (let id = 1; id <= 20; id++) {
+          try {
+            const flight = await flightApi.getFlightById(id);
+            const depDate = flight.departureTime.split('T')[0];
+            const today = new Date().toISOString().split('T')[0];
+
+            if (depDate >= today) {
+              setFormData({
+                departureAirportCode: flight.departureAirport.iataCode,
+                arrivalAirportCode: flight.arrivalAirport.iataCode,
+                departureDate: depDate,
+                passengers: 1,
+                seatClass: 'ECONOMY',
+              });
+              break;
+            }
+          } catch {
+          }
+        }
+      } finally {
+        setPrefilling(false);
+      }
+    };
+
+    fetchFirstFlight();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearch) {
-      onSearch(formData);
-    }
+    if (onSearch) onSearch(formData);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -87,6 +123,7 @@ const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) 
             name="departureAirportCode"
             value={formData.departureAirportCode}
             onChange={handleChange}
+            disabled={prefilling}
             required
           >
             <option value="">Válasszon repülőteret</option>
@@ -108,6 +145,7 @@ const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) 
             name="arrivalAirportCode"
             value={formData.arrivalAirportCode}
             onChange={handleChange}
+            disabled={prefilling}
             required
           >
             <option value="">Válasszon repülőteret</option>
@@ -131,6 +169,7 @@ const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) 
             value={formData.departureDate}
             onChange={handleChange}
             min={new Date().toISOString().split('T')[0]}
+            disabled={prefilling}
             required
           />
         </div>
@@ -174,9 +213,9 @@ const FlightSearchForm = ({ onSearch, loading = false }: FlightSearchFormProps) 
         </div>
 
         <div className="form-group submit-group">
-          <button type="submit" className="search-button" disabled={loading}>
+          <button type="submit" className="search-button" disabled={loading || prefilling}>
             <span className="icon"><IoMdSearch /></span>
-            {loading ? 'Keresés...' : 'Járatok keresése'}
+            {prefilling ? 'Betöltés...' : loading ? 'Keresés...' : 'Járatok keresése'}
           </button>
         </div>
 

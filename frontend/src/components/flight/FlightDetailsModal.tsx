@@ -31,9 +31,10 @@ interface Flight {
 interface FlightDetailsModalProps {
   flight: Flight;
   onClose: () => void;
+  onBookingClick?: (flight: Flight, seatClass: 'ECONOMY' | 'BUSINESS' | 'FIRST') => void;
 }
 
-const FlightDetailsModal = ({ flight, onClose }: FlightDetailsModalProps) => {
+const FlightDetailsModal = ({ flight, onClose, onBookingClick }: FlightDetailsModalProps) => {
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
@@ -65,8 +66,10 @@ const FlightDetailsModal = ({ flight, onClose }: FlightDetailsModalProps) => {
   };
 
   const handleBooking = (seatClass: 'ECONOMY' | 'BUSINESS' | 'FIRST') => {
-    console.log('Booking:', flight.id, seatClass);
-    alert(`Foglalás folyamatban: ${flight.flightNumber} - ${seatClass}`);
+    if (onBookingClick) {
+      onClose();
+      onBookingClick(flight, seatClass);
+    }
   };
 
   return (
@@ -187,9 +190,10 @@ const FlightDetailsModal = ({ flight, onClose }: FlightDetailsModalProps) => {
                       <span className="seats-status">{getSeatStatusLabel(flight.availableSeats.ECONOMY)}</span>
                     </div>
                   </div>
-                  <button 
+                  <button
                     className="book-now-btn"
                     onClick={() => handleBooking('ECONOMY')}
+                    disabled={!onBookingClick}
                   >
                     Foglalás most
                   </button>
@@ -211,9 +215,10 @@ const FlightDetailsModal = ({ flight, onClose }: FlightDetailsModalProps) => {
                       <span className="seats-status">{getSeatStatusLabel(flight.availableSeats.BUSINESS)}</span>
                     </div>
                   </div>
-                  <button 
+                  <button
                     className="book-now-btn"
                     onClick={() => handleBooking('BUSINESS')}
+                    disabled={!onBookingClick}
                   >
                     Foglalás most
                   </button>
@@ -234,9 +239,10 @@ const FlightDetailsModal = ({ flight, onClose }: FlightDetailsModalProps) => {
                       <span className="seats-status">{getSeatStatusLabel(flight.availableSeats.FIRST)}</span>
                     </div>
                   </div>
-                  <button 
+                  <button
                     className="book-now-btn"
                     onClick={() => handleBooking('FIRST')}
+                    disabled={!onBookingClick}
                   >
                     Foglalás most
                   </button>
