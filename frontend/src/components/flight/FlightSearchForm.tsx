@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import './FlightSearchForm.css';
 import { MdFlightLand, MdFlightTakeoff, MdDateRange, MdEventSeat } from "react-icons/md";
 import { IoMdPerson, IoMdSearch } from "react-icons/io";
+import { FaWallet } from "react-icons/fa";
+import { GiWallet } from "react-icons/gi";
+import { BsBriefcaseFill } from "react-icons/bs";
 import { flightApi } from '../../services/api';
 import CustomSelect from '../common/CustomSelect';
 import type { SelectOption } from '../common/CustomSelect';
@@ -50,9 +53,9 @@ const AIRPORT_OPTIONS: SelectOption[] = [
 ];
 
 const CLASS_OPTIONS: SelectOption[] = [
-  { value: 'ECONOMY', label: 'Economy', icon: '💺', description: 'Gazdaságos utazás' },
-  { value: 'BUSINESS', label: 'Business', icon: '🛋️', description: 'Kényelmes üzleti osztály' },
-  { value: 'FIRST', label: 'First Class', icon: '✨', description: 'Prémium első osztály' },
+  { value: 'ECONOMY', label: 'Economy', icon: <FaWallet />, description: 'Gazdaságos utazás' },
+  { value: 'BUSINESS', label: 'Business', icon: <BsBriefcaseFill />, description: 'Kényelmes üzleti osztály' },
+  { value: 'FIRST', label: 'First Class', icon: <GiWallet />, description: 'Prémium első osztály' },
 ];
 
 const FALLBACK: SearchParams = {

@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import './CustomSelect.css';
+import { FaCheck } from 'react-icons/fa';
 
 export interface SelectOption {
     value: string;
     label: string;
     sublabel?: string;
-    icon?: string;
+    icon?: string | ReactNode;
     description?: string;
 }
 
@@ -161,7 +162,7 @@ const CustomSelect = ({
                                         {opt.sublabel && !opt.description && (
                                             <span className="cs-option-badge">{opt.value}</span>
                                         )}
-                                        {isActive && <span className="cs-check">✓</span>}
+                                        {isActive && <span className="cs-check"><FaCheck /></span>}
                                     </button>
                                 );
                             })

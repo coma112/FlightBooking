@@ -10,7 +10,10 @@ import {
     FaClock, FaHeadset, FaSpinner, FaCheck, FaPaperPlane
 } from 'react-icons/fa';
 
-import { MdChat, MdFlight, MdSupportAgent } from 'react-icons/md';
+import { 
+    MdChat, MdFlight, MdSupportAgent, MdChatBubble,
+    MdCancelScheduleSend, MdPayments, MdEngineering, 
+} from 'react-icons/md';
 
 interface ContactFormData {
     name: string;
@@ -20,11 +23,11 @@ interface ContactFormData {
 }
 
 const SUBJECT_OPTIONS = [
-  { value: 'booking',   label: 'Foglalással kapcsolatos kérdés', icon: '✈️' },
-  { value: 'cancel',    label: 'Lemondás / módosítás',           icon: '🔄' },
-  { value: 'payment',   label: 'Fizetéssel kapcsolatos probléma',icon: '💳' },
-  { value: 'technical', label: 'Technikai probléma',             icon: '🔧' },
-  { value: 'other',     label: 'Egyéb kérdés',                   icon: '💬' },
+  { value: 'booking',   label: 'Foglalással kapcsolatos kérdés', icon: <MdFlight /> },
+  { value: 'cancel',    label: 'Lemondás / módosítás',           icon: <MdCancelScheduleSend /> },
+  { value: 'payment',   label: 'Fizetéssel kapcsolatos probléma',icon: <MdPayments /> },
+  { value: 'technical', label: 'Technikai probléma',             icon: <MdEngineering /> },
+  { value: 'other',     label: 'Egyéb kérdés',                   icon: <MdChatBubble /> },
 ];
 
 const ContactPage = () => {
@@ -209,7 +212,7 @@ const ContactPage = () => {
 
                                 <div className="hours-row">
                                     <span className="hours-day">Vasárnap</span>
-                                    <span className="hours-time">Zárva</span>
+                                    <span className="hours-closed">Zárva</span>
                                 </div>
                             </div>
                         </div>
