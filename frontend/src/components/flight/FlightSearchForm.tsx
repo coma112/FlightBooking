@@ -3,6 +3,8 @@ import './FlightSearchForm.css';
 import { MdFlightLand, MdFlightTakeoff, MdDateRange, MdEventSeat } from "react-icons/md";
 import { IoMdPerson, IoMdSearch } from "react-icons/io";
 import { flightApi } from '../../services/api';
+import CustomSelect from '../common/CustomSelect';
+import type { SelectOption } from '../common/CustomSelect';
 
 export interface SearchParams {
   departureAirportCode: string;
@@ -18,33 +20,39 @@ interface FlightSearchFormProps {
   initialValues?: SearchParams;
 }
 
-const AIRPORTS = [
-  { code: 'BUD', name: 'Budapest Liszt Ferenc', city: 'Budapest' },
-  { code: 'LHR', name: 'London Heathrow', city: 'London' },
-  { code: 'CDG', name: 'Paris Charles de Gaulle', city: 'Párizs' },
-  { code: 'FRA', name: 'Frankfurt Airport', city: 'Frankfurt' },
-  { code: 'AMS', name: 'Amsterdam Schiphol', city: 'Amszterdam' },
-  { code: 'BCN', name: 'Barcelona El Prat', city: 'Barcelona' },
-  { code: 'FCO', name: 'Roma Fiumicino', city: 'Róma' },
-  { code: 'VIE', name: 'Vienna International', city: 'Bécs' },
-  { code: 'MUC', name: 'Munich Airport', city: 'München' },
-  { code: 'MAD', name: 'Madrid Barajas', city: 'Madrid' },
-  { code: 'WAW', name: 'Warsaw Chopin', city: 'Varsó' },
-  { code: 'PRG', name: 'Prague Václav Havel', city: 'Prága' },
-  { code: 'ZRH', name: 'Zurich Airport', city: 'Zürich' },
-  { code: 'CPH', name: 'Copenhagen Airport', city: 'Koppenhága' },
-  { code: 'ARN', name: 'Stockholm Arlanda', city: 'Stockholm' },
-  { code: 'HEL', name: 'Helsinki Airport', city: 'Helsinki' },
-  { code: 'DUB', name: 'Dublin Airport', city: 'Dublin' },
-  { code: 'ATH', name: 'Athens International', city: 'Athén' },
-  { code: 'IST', name: 'Istanbul Airport', city: 'Isztambul' },
-  { code: 'DXB', name: 'Dubai International', city: 'Dubai' },
-  { code: 'JFK', name: 'New York JFK', city: 'New York' },
-  { code: 'LAX', name: 'Los Angeles International', city: 'Los Angeles' },
-  { code: 'BKK', name: 'Bangkok Suvarnabhumi', city: 'Bangkok' },
-  { code: 'SIN', name: 'Singapore Changi', city: 'Szingapúr' },
-  { code: 'NRT', name: 'Tokyo Narita', city: 'Tokió' },
-  { code: 'SYD', name: 'Sydney Airport', city: 'Sydney' },
+const AIRPORT_OPTIONS: SelectOption[] = [
+  { value: 'BUD', label: 'Budapest', sublabel: 'Liszt Ferenc', icon: '🇭🇺' },
+  { value: 'LHR', label: 'London', sublabel: 'Heathrow', icon: '🇬🇧' },
+  { value: 'CDG', label: 'Párizs', sublabel: 'Charles de Gaulle', icon: '🇫🇷' },
+  { value: 'FRA', label: 'Frankfurt', sublabel: 'Frankfurt Airport', icon: '🇩🇪' },
+  { value: 'AMS', label: 'Amszterdam', sublabel: 'Schiphol', icon: '🇳🇱' },
+  { value: 'BCN', label: 'Barcelona', sublabel: 'El Prat', icon: '🇪🇸' },
+  { value: 'FCO', label: 'Róma', sublabel: 'Fiumicino', icon: '🇮🇹' },
+  { value: 'VIE', label: 'Bécs', sublabel: 'Vienna International', icon: '🇦🇹' },
+  { value: 'MUC', label: 'München', sublabel: 'Munich Airport', icon: '🇩🇪' },
+  { value: 'MAD', label: 'Madrid', sublabel: 'Barajas', icon: '🇪🇸' },
+  { value: 'WAW', label: 'Varsó', sublabel: 'Chopin', icon: '🇵🇱' },
+  { value: 'PRG', label: 'Prága', sublabel: 'Václav Havel', icon: '🇨🇿' },
+  { value: 'ZRH', label: 'Zürich', sublabel: 'Zurich Airport', icon: '🇨🇭' },
+  { value: 'CPH', label: 'Koppenhága', sublabel: 'Copenhagen Airport', icon: '🇩🇰' },
+  { value: 'ARN', label: 'Stockholm', sublabel: 'Arlanda', icon: '🇸🇪' },
+  { value: 'HEL', label: 'Helsinki', sublabel: 'Helsinki Airport', icon: '🇫🇮' },
+  { value: 'DUB', label: 'Dublin', sublabel: 'Dublin Airport', icon: '🇮🇪' },
+  { value: 'ATH', label: 'Athén', sublabel: 'Athens International', icon: '🇬🇷' },
+  { value: 'IST', label: 'Isztambul', sublabel: 'Istanbul Airport', icon: '🇹🇷' },
+  { value: 'DXB', label: 'Dubai', sublabel: 'Dubai International', icon: '🇦🇪' },
+  { value: 'JFK', label: 'New York', sublabel: 'John F. Kennedy', icon: '🇺🇸' },
+  { value: 'LAX', label: 'Los Angeles', sublabel: 'LAX International', icon: '🇺🇸' },
+  { value: 'BKK', label: 'Bangkok', sublabel: 'Suvarnabhumi', icon: '🇹🇭' },
+  { value: 'SIN', label: 'Szingapúr', sublabel: 'Changi', icon: '🇸🇬' },
+  { value: 'NRT', label: 'Tokió', sublabel: 'Narita', icon: '🇯🇵' },
+  { value: 'SYD', label: 'Sydney', sublabel: 'Sydney Airport', icon: '🇦🇺' },
+];
+
+const CLASS_OPTIONS: SelectOption[] = [
+  { value: 'ECONOMY', label: 'Economy', icon: '💺', description: 'Gazdaságos utazás' },
+  { value: 'BUSINESS', label: 'Business', icon: '🛋️', description: 'Kényelmes üzleti osztály' },
+  { value: 'FIRST', label: 'First Class', icon: '✨', description: 'Prémium első osztály' },
 ];
 
 const FALLBACK: SearchParams = {
@@ -61,7 +69,6 @@ const FALLBACK: SearchParams = {
 
 const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSearchFormProps) => {
   const [formData, setFormData] = useState<SearchParams>(initialValues ?? FALLBACK);
-  // amíg az API hívás fut (csak ha nincs initialValues)
   const [prefilling, setPrefilling] = useState(!initialValues);
 
   useEffect(() => {
@@ -101,12 +108,12 @@ const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSe
     if (onSearch) onSearch(formData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'passengers' ? parseInt(value) : value,
-    }));
+  const handlePassengers = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, passengers: parseInt(e.target.value) }));
+  };
+
+  const handleDate = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, departureDate: e.target.value }));
   };
 
   return (
@@ -118,21 +125,14 @@ const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSe
             <span className="icon"><MdFlightTakeoff /></span>
             Indulási repülőtér
           </label>
-          <select
-            id="departureAirportCode"
-            name="departureAirportCode"
+          <CustomSelect 
+            options={AIRPORT_OPTIONS}
             value={formData.departureAirportCode}
-            onChange={handleChange}
+            onChange={val => setFormData(prev => ({ ...prev, departureAirportCode: val }))}
+            placeholder="Válasszon repülőteret"
+            searchable
             disabled={prefilling}
-            required
-          >
-            <option value="">Válasszon repülőteret</option>
-            {AIRPORTS.map(airport => (
-              <option key={airport.code} value={airport.code}>
-                {airport.code} - {airport.city} ({airport.name})
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div className="form-group">
@@ -140,21 +140,14 @@ const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSe
             <span className="icon"><MdFlightLand /></span>
             Érkezési repülőtér
           </label>
-          <select
-            id="arrivalAirportCode"
-            name="arrivalAirportCode"
+          <CustomSelect 
+            options={AIRPORT_OPTIONS}
             value={formData.arrivalAirportCode}
-            onChange={handleChange}
+            onChange={val => setFormData(prev => ({ ...prev, arrivalAirportCode: val }))}
+            placeholder="Válasszon repülőteret"
+            searchable
             disabled={prefilling}
-            required
-          >
-            <option value="">Válasszon repülőteret</option>
-            {AIRPORTS.map(airport => (
-              <option key={airport.code} value={airport.code}>
-                {airport.code} - {airport.city} ({airport.name})
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div className="form-group">
@@ -167,7 +160,7 @@ const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSe
             id="departureDate"
             name="departureDate"
             value={formData.departureDate}
-            onChange={handleChange}
+            onChange={handleDate}
             min={new Date().toISOString().split('T')[0]}
             disabled={prefilling}
             required
@@ -186,7 +179,7 @@ const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSe
             min="1"
             max="9"
             value={formData.passengers}
-            onChange={handleChange}
+            onChange={handlePassengers}
           />
           <div className="range-labels">
             <span>1</span>
@@ -199,17 +192,11 @@ const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSe
             <span className="icon"><MdEventSeat /></span>
             Osztály
           </label>
-          <select
-            id="seatClass"
-            name="seatClass"
+          <CustomSelect 
+            options={CLASS_OPTIONS}
             value={formData.seatClass}
-            onChange={handleChange}
-            required
-          >
-            <option value="ECONOMY">Economy</option>
-            <option value="BUSINESS">Business</option>
-            <option value="FIRST">First Class</option>
-          </select>
+            onChange={val => setFormData(prev => ({ ...prev, seatClass: val as SearchParams['seatClass'] }))}
+          />
         </div>
 
         <div className="form-group submit-group">

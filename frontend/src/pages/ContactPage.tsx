@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
+import CustomSelect from '../components/common/CustomSelect';
 import './ContactPage.css';
 
 import {
@@ -17,6 +18,14 @@ interface ContactFormData {
     subject: string;
     message: string;
 }
+
+const SUBJECT_OPTIONS = [
+  { value: 'booking',   label: 'Foglalással kapcsolatos kérdés', icon: '✈️' },
+  { value: 'cancel',    label: 'Lemondás / módosítás',           icon: '🔄' },
+  { value: 'payment',   label: 'Fizetéssel kapcsolatos probléma',icon: '💳' },
+  { value: 'technical', label: 'Technikai probléma',             icon: '🔧' },
+  { value: 'other',     label: 'Egyéb kérdés',                   icon: '💬' },
+];
 
 const ContactPage = () => {
     const [formData, setFormData] = useState<ContactFormData>({
@@ -54,7 +63,7 @@ const ContactPage = () => {
         }
     };
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -64,7 +73,7 @@ const ContactPage = () => {
         }
     };
 
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         const fieldName = name as keyof ContactFormData;
 
@@ -72,6 +81,15 @@ const ContactPage = () => {
 
         const error = validateField(fieldName, value);
         setErrors(prev => ({ ...prev, [fieldName]: error ?? undefined }));
+    };
+
+    const handleSubjectChange = (value: string) => {
+        setFormData(prev => ({ ...prev, subject: value }));
+        setTouched(prev => ({ ...prev, subject: true }));
+        
+        const error = validateField('subject', value);
+
+        setErrors(prev => ({ ...prev, subject: error ?? undefined }));
     };
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -268,24 +286,13 @@ const ContactPage = () => {
                                             Tárgy <span className="cf-required">*</span>
                                         </label>
                                         
-                                        <select
-                                            id="cf-subject"
-                                            name="subject"
+                                        <CustomSelect 
+                                            options={SUBJECT_OPTIONS}
                                             value={formData.subject}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
+                                            onChange={handleSubjectChange}
+                                            placeholder="Válasszon témát"
                                             disabled={loading}
-                                            className={`cf-input ${touched.subject && errors.subject ? 'cf-input-error' : ''}`}
-                                        >
-
-                                            <option value="">Válasszon témát</option>
-                                            <option value="booking">Foglalással kapcsolatos kérdés</option>
-                                            <option value="cancel">Lemondás / módosítás</option>
-                                            <option value="payment">Fizetéssel kapcsolatos probléma</option>
-                                            <option value="technical">Technikai probléma</option>
-                                            <option value="other">Egyéb kérdés</option>
-                                        </select>
-
+                                        />
                                         {touched.subject && errors.subject && (
                                             <span className="cf-error">{errors.subject}</span>
                                         )}

@@ -50,6 +50,7 @@ docker compose up --build
 Levideóztam a fejlesztésemet és utamat, hogy később tanulni tudjak belőle.
 0 effort van a videókban, úgy éreztem hogy felveszem és felvettem.
 
+- [10. Videó](https://youtu.be/gDG8U9bTNwo) - CustomSelect Common Component
 - [9. Videó](https://youtu.be/AxO6JAMDNCw) - Theme Context, Contact Page
 - [8. Videó](https://youtu.be/bIKdVYV2WcE) - 404 Oldal és React Router DOM
 - [7. Videó](https://youtu.be/0tuvfuaQCFY) - Docker & Kevés debug

@@ -18,7 +18,8 @@
   flex-direction: column;
 }
 
-.form-group label {
+.form-group label,
+.form-label {
   font-weight: 600;
   color: #333;
   margin-bottom: 0.5rem;
@@ -26,13 +27,13 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.95rem;
+  font-family: inherit;
 }
 
 .form-group .icon {
   font-size: 1.2rem;
 }
 
-.form-group select,
 .form-group input[type="date"] {
   padding: 0.875rem;
   border: 2px solid #e0e0e0;
@@ -41,9 +42,9 @@
   transition: all 0.3s ease;
   background: white;
   color: #333;
+  font-family: inherit;
 }
 
-.form-group select:focus,
 .form-group input[type="date"]:focus {
   outline: none;
   border-color: #0078D4;
@@ -106,6 +107,7 @@
   gap: 0.75rem;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 120, 212, 0.3);
+  font-family: inherit;
 }
 
 .search-button:hover {
@@ -115,6 +117,30 @@
 
 .search-button:active {
   transform: translateY(0);
+}
+
+[data-theme="dark"] .flight-search-form {
+  background: var(--bg-card);
+}
+
+[data-theme="dark"] .form-group label,
+[data-theme="dark"] .form-label {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-group input[type="date"] {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-group input[type="date"]:focus {
+  border-color: #0078D4;
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.2);
+}
+
+[data-theme="dark"] .range-labels {
+  color: var(--text-secondary);
 }
 
 @media (max-width: 768px) {
