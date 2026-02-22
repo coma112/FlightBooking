@@ -1,13 +1,3 @@
-/* szerintem a css-t rábízom az AI-ra 
-    egyszer megkaptam hogy AI-ozok,
-    hát sajnos vagy nem sajnos
-    az AI erre lett kitalálva,
-    a sablon munkákat elvégezni,
-    nem fogok 600-700 sort írni ha az AI
-    jobban lemásolja a saját stílusomat.
-    stay mad.
-*/
-
 .cdp-root {
     position: relative;
     width: 100%;
@@ -24,15 +14,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.875rem 1rem;
+    gap: 0.4rem;
+    padding: 0.7rem 0.875rem;
     background: white;
     border: 2px solid #e5e7eb;
     border-radius: 8px;
     cursor: pointer;
     color: #1a1a1a;
     font-family: inherit;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     text-align: left;
     outline: none;
@@ -45,22 +35,19 @@
 .cdp-trigger--open {
     border-color: #0078D4;
     box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-color: transparent;
 }
 
 .cdp-trigger-content {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
+    gap: 0.5rem;
     flex: 1;
     min-width: 0;
 }
 
 .cdp-trigger-icon {
-    font-size: 1.15rem;
-    color: #0078D4;
+    font-size: 1rem;
+    color: #1a1a1a;
     flex-shrink: 0;
     line-height: 1;
 }
@@ -68,12 +55,12 @@
 .cdp-trigger-text {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: 0.05rem;
     min-width: 0;
 }
 
 .cdp-trigger-label {
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #1a1a1a;
     white-space: nowrap;
@@ -83,7 +70,7 @@
 }
 
 .cdp-trigger-sub {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: #9ca3af;
     white-space: nowrap;
     overflow: hidden;
@@ -92,7 +79,7 @@
 }
 
 .cdp-trigger-placeholder {
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     color: #9ca3af;
 }
 
@@ -111,53 +98,41 @@
     transform: rotate(180deg);
 }
 
-/* 
-  position: fixed + top/left/width JS-ből jön (panelStyle),
-  így a panel sosem vágódik le overflow:hidden szülők miatt.
-*/
+/* Panel: position comes entirely from JS (top/left/width via style prop) */
 .cdp-panel {
-    position: fixed;
+    position: absolute; /* overridden by inline style from JS */
     z-index: 9999;
     background: white;
     border: 2px solid #0078D4;
-    border-top: none;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    box-shadow: 0 12px 40px rgba(0, 120, 212, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 120, 212, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    animation: cdp-panel-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: cdp-panel-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     user-select: none;
+    min-width: 240px;
 }
 
 @keyframes cdp-panel-in {
-    from {
-        opacity: 0;
-        transform: translateY(-6px) scale(0.97);
-        transform-origin: top;
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        transform-origin: top;
-    }
+    from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .cdp-nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem 0.5rem;
+    padding: 0.5rem 0.75rem 0.375rem;
     background: #f8fbff;
     border-bottom: 1px solid #f0f7ff;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
 .cdp-nav-btn {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     border: none;
     background: transparent;
-    border-radius: 6px;
+    border-radius: 5px;
     cursor: pointer;
     color: #0078D4;
     font-size: 1rem;
@@ -168,36 +143,27 @@
     flex-shrink: 0;
 }
 
-.cdp-nav-btn:hover {
-    background: #e8f4fd;
-}
-
-.cdp-nav-btn:disabled {
-    color: #d1d5db;
-    cursor: not-allowed;
-}
-
-.cdp-nav-btn:disabled:hover {
-    background: transparent;
-}
+.cdp-nav-btn:hover { background: #e8f4fd; }
+.cdp-nav-btn:disabled { color: #d1d5db; cursor: not-allowed; }
+.cdp-nav-btn:disabled:hover { background: transparent; }
 
 .cdp-nav-center {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.25rem;
     flex: 1;
     justify-content: center;
 }
 
 .cdp-nav-month-btn,
 .cdp-nav-year-btn {
-    padding: 0.25rem 0.625rem;
+    padding: 0.2rem 0.5rem;
     border: none;
     background: transparent;
-    border-radius: 6px;
+    border-radius: 5px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: #1a1a1a;
     transition: background 0.15s, color 0.15s;
@@ -205,178 +171,131 @@
 }
 
 .cdp-nav-month-btn:hover,
-.cdp-nav-year-btn:hover {
-    background: #e8f4fd;
-    color: #0078D4;
-}
+.cdp-nav-year-btn:hover { background: #e8f4fd; color: #0078D4; }
 
 .cdp-nav-month-btn--active,
-.cdp-nav-year-btn--active {
-    background: rgba(0, 120, 212, 0.1);
-    color: #0078D4;
-}
+.cdp-nav-year-btn--active { background: rgba(0, 120, 212, 0.1); color: #0078D4; }
 
-.cdp-nav-sep {
-    font-size: 0.75rem;
-    color: #d1d5db;
-    font-weight: 400;
-}
+.cdp-nav-sep { font-size: 0.7rem; color: #d1d5db; }
 
 .cdp-month-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.375rem;
-    padding: 0.75rem;
-    animation: cdp-fade-in 0.15s ease;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    animation: cdp-fade-in 0.13s ease;
 }
 
 @keyframes cdp-fade-in {
     from { opacity: 0; transform: scale(0.97); }
-    to { opacity: 1; transform: scale(1); }
+    to   { opacity: 1; transform: scale(1); }
 }
 
 .cdp-month-opt {
-    padding: 0.5rem 0.25rem;
+    padding: 0.4rem 0.2rem;
     border: 1.5px solid #e5e7eb;
-    border-radius: 6px;
+    border-radius: 5px;
     background: transparent;
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: #4b5563;
     cursor: pointer;
     text-align: center;
-    transition: all 0.15s;
+    transition: all 0.13s;
 }
 
-.cdp-month-opt:hover {
-    background: #f0f7ff;
-    border-color: #0078D4;
-    color: #0078D4;
-}
-
-.cdp-month-opt--active {
-    background: linear-gradient(135deg, #0078D4, #005A9E);
-    border-color: #0078D4;
-    color: white;
-}
-
-.cdp-month-opt--active:hover {
-    background: linear-gradient(135deg, #0078D4, #005A9E);
-    color: white;
-}
+.cdp-month-opt:hover { background: #f0f7ff; border-color: #0078D4; color: #0078D4; }
+.cdp-month-opt--active { background: linear-gradient(135deg, #0078D4, #005A9E); border-color: #0078D4; color: white; }
+.cdp-month-opt--active:hover { background: linear-gradient(135deg, #0078D4, #005A9E); color: white; }
 
 .cdp-year-scroll {
-    max-height: 200px;
+    max-height: 176px;
     overflow-y: auto;
-    padding: 0.5rem;
+    padding: 0.375rem;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.375rem;
-    animation: cdp-fade-in 0.15s ease;
+    gap: 0.25rem;
+    animation: cdp-fade-in 0.13s ease;
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 120, 212, 0.2) transparent;
 }
 
-.cdp-year-scroll::-webkit-scrollbar { width: 4px; }
+.cdp-year-scroll::-webkit-scrollbar { width: 3px; }
 .cdp-year-scroll::-webkit-scrollbar-track { background: transparent; }
 .cdp-year-scroll::-webkit-scrollbar-thumb { background: rgba(0, 120, 212, 0.2); border-radius: 2px; }
 
 .cdp-year-opt {
-    padding: 0.5rem 0.25rem;
+    padding: 0.35rem 0.2rem;
     border: 1.5px solid #e5e7eb;
-    border-radius: 6px;
+    border-radius: 5px;
     background: transparent;
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: #4b5563;
     cursor: pointer;
     text-align: center;
-    transition: all 0.15s;
+    transition: all 0.13s;
 }
 
-.cdp-year-opt:hover {
-    background: #f0f7ff;
-    border-color: #0078D4;
-    color: #0078D4;
-}
-
-.cdp-year-opt--active {
-    background: linear-gradient(135deg, #0078D4, #005A9E);
-    border-color: #0078D4;
-    color: white;
-}
-
-.cdp-year-opt--active:hover {
-    background: linear-gradient(135deg, #0078D4, #005A9E);
-    color: white;
-}
+.cdp-year-opt:hover { background: #f0f7ff; border-color: #0078D4; color: #0078D4; }
+.cdp-year-opt--active { background: linear-gradient(135deg, #0078D4, #005A9E); border-color: #0078D4; color: white; }
+.cdp-year-opt--active:hover { background: linear-gradient(135deg, #0078D4, #005A9E); color: white; }
 
 .cdp-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    padding: 0.25rem 0.5rem 0;
+    padding: 0.2rem 0.375rem 0;
 }
 
 .cdp-weekday {
     text-align: center;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 700;
     color: #9ca3af;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 0.375rem 0;
+    letter-spacing: 0.3px;
+    padding: 0.3rem 0;
 }
 
-.cdp-weekday--weekend {
-    color: #0078D4;
-    opacity: 0.7;
-}
+.cdp-weekday--weekend { color: #0078D4; opacity: 0.7; }
 
 .cdp-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    padding: 0.375rem 0.5rem 0.75rem;
-    gap: 2px;
+    padding: 0.25rem 0.375rem 0.5rem;
+    gap: 1px;
 }
 
 .cdp-day {
     aspect-ratio: 1;
     border: none;
     background: transparent;
-    border-radius: 6px;
+    border-radius: 5px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 500;
     color: #374151;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s;
+    transition: all 0.12s;
     position: relative;
 }
 
-.cdp-day:hover:not(:disabled) {
-    background: #f0f7ff;
-    color: #0078D4;
-    font-weight: 700;
-}
+.cdp-day:hover:not(:disabled) { background: #f0f7ff; color: #0078D4; font-weight: 700; }
 
-.cdp-day--today {
-    color: #0078D4;
-    font-weight: 700;
-}
-
+.cdp-day--today { color: #0078D4; font-weight: 700; }
 .cdp-day--today::after {
     content: '';
     position: absolute;
-    bottom: 3px;
+    bottom: 2px;
     left: 50%;
     transform: translateX(-50%);
-    width: 4px;
-    height: 4px;
+    width: 3px;
+    height: 3px;
     background: #0078D4;
     border-radius: 50%;
 }
@@ -385,40 +304,26 @@
     background: linear-gradient(135deg, #0078D4, #005A9E) !important;
     color: white !important;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(0, 120, 212, 0.35);
+    box-shadow: 0 2px 6px rgba(0, 120, 212, 0.35);
 }
 
-.cdp-day--selected::after {
-    display: none;
-}
+.cdp-day--selected::after { display: none; }
 
-.cdp-day--other-month {
-    color: #d1d5db;
-}
-
-.cdp-day--other-month:hover:not(:disabled) {
-    color: #9ca3af;
-}
+.cdp-day--other-month { color: #d1d5db; }
+.cdp-day--other-month:hover:not(:disabled) { color: #9ca3af; }
 
 .cdp-day--weekend:not(.cdp-day--other-month):not(:disabled):not(.cdp-day--selected) {
     color: #0078D4;
     opacity: 0.85;
 }
 
-.cdp-day:disabled {
-    color: #e5e7eb;
-    cursor: not-allowed;
-}
-
-.cdp-day--empty {
-    pointer-events: none;
-}
+.cdp-day:disabled { color: #e5e7eb; cursor: not-allowed; }
 
 .cdp-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem 0.75rem 0.625rem;
+    padding: 0.375rem 0.625rem 0.5rem;
     border-top: 1px solid #f0f7ff;
     background: #f8fbff;
     gap: 0.5rem;
@@ -426,153 +331,75 @@
 
 .cdp-today-btn {
     font-family: inherit;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: #0078D4;
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0.25rem 0.5rem;
+    padding: 0.2rem 0.4rem;
     border-radius: 4px;
-    transition: background 0.15s;
+    transition: background 0.13s;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.cdp-today-btn:hover {
-    background: #e8f4fd;
-}
+.cdp-today-btn:hover { background: #e8f4fd; }
 
 .cdp-clear-btn {
     font-family: inherit;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: #9ca3af;
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0.25rem 0.5rem;
+    padding: 0.2rem 0.4rem;
     border-radius: 4px;
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.13s, color 0.13s;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.cdp-clear-btn:hover {
-    background: #fef2f2;
-    color: #dc2626;
-}
+.cdp-clear-btn:hover { background: #fef2f2; color: #dc2626; }
 
+/* ── Dark mode ── */
 [data-theme="dark"] .cdp-trigger {
     background: var(--input-bg);
     border-color: var(--input-border);
     color: var(--text-primary);
 }
-
 [data-theme="dark"] .cdp-trigger:hover,
-[data-theme="dark"] .cdp-trigger--open {
-    border-color: #0078D4;
-}
-
-[data-theme="dark"] .cdp-trigger--open {
-    border-bottom-color: transparent;
-}
-
-[data-theme="dark"] .cdp-trigger-label {
-    color: var(--text-primary);
-}
-
+[data-theme="dark"] .cdp-trigger--open { border-color: #0078D4; }
+[data-theme="dark"] .cdp-trigger-label { color: var(--text-primary); }
 [data-theme="dark"] .cdp-trigger-sub,
-[data-theme="dark"] .cdp-trigger-placeholder {
-    color: var(--text-muted);
-}
+[data-theme="dark"] .cdp-trigger-placeholder { color: var(--text-muted); }
 
 [data-theme="dark"] .cdp-panel {
     background: var(--bg-card);
     border-color: #0078D4;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
-
 [data-theme="dark"] .cdp-nav,
-[data-theme="dark"] .cdp-footer {
-    background: var(--bg-hover);
-    border-color: var(--border-color);
-}
-
-[data-theme="dark"] .cdp-nav-btn {
-    color: #4fb3ff;
-}
-
-[data-theme="dark"] .cdp-nav-btn:hover {
-    background: #1a2540;
-}
-
+[data-theme="dark"] .cdp-footer { background: var(--bg-hover); border-color: var(--border-color); }
+[data-theme="dark"] .cdp-nav-btn { color: #4fb3ff; }
+[data-theme="dark"] .cdp-nav-btn:hover { background: #1a2540; }
 [data-theme="dark"] .cdp-nav-month-btn,
-[data-theme="dark"] .cdp-nav-year-btn {
-    color: var(--text-primary);
-}
-
+[data-theme="dark"] .cdp-nav-year-btn { color: var(--text-primary); }
 [data-theme="dark"] .cdp-nav-month-btn:hover,
-[data-theme="dark"] .cdp-nav-year-btn:hover {
-    background: #1a2540;
-    color: #4fb3ff;
-}
-
+[data-theme="dark"] .cdp-nav-year-btn:hover { background: #1a2540; color: #4fb3ff; }
 [data-theme="dark"] .cdp-month-opt,
-[data-theme="dark"] .cdp-year-opt {
-    border-color: var(--border-color);
-    color: var(--text-secondary);
-}
-
+[data-theme="dark"] .cdp-year-opt { border-color: var(--border-color); color: var(--text-secondary); }
 [data-theme="dark"] .cdp-month-opt:hover,
-[data-theme="dark"] .cdp-year-opt:hover {
-    background: #1a2540;
-    border-color: #0078D4;
-    color: #4fb3ff;
-}
-
-[data-theme="dark"] .cdp-weekday {
-    color: var(--text-muted);
-}
-
-[data-theme="dark"] .cdp-day {
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .cdp-day:hover:not(:disabled) {
-    background: #1a2540;
-    color: #4fb3ff;
-}
-
-[data-theme="dark"] .cdp-day--today {
-    color: #4fb3ff;
-}
-
-[data-theme="dark"] .cdp-day--today::after {
-    background: #4fb3ff;
-}
-
-[data-theme="dark"] .cdp-day--other-month {
-    color: var(--text-muted);
-    opacity: 0.5;
-}
-
-[data-theme="dark"] .cdp-day--weekend:not(.cdp-day--other-month):not(:disabled):not(.cdp-day--selected) {
-    color: #4fb3ff;
-}
-
-[data-theme="dark"] .cdp-day:disabled {
-    color: var(--border-color);
-}
-
-[data-theme="dark"] .cdp-today-btn {
-    color: #4fb3ff;
-}
-
-[data-theme="dark"] .cdp-today-btn:hover {
-    background: #1a2540;
-}
-
-[data-theme="dark"] .cdp-clear-btn {
-    color: var(--text-muted);
-}
+[data-theme="dark"] .cdp-year-opt:hover { background: #1a2540; border-color: #0078D4; color: #4fb3ff; }
+[data-theme="dark"] .cdp-weekday { color: var(--text-muted); }
+[data-theme="dark"] .cdp-day { color: var(--text-primary); }
+[data-theme="dark"] .cdp-day:hover:not(:disabled) { background: #1a2540; color: #4fb3ff; }
+[data-theme="dark"] .cdp-day--today { color: #4fb3ff; }
+[data-theme="dark"] .cdp-day--today::after { background: #4fb3ff; }
+[data-theme="dark"] .cdp-day--other-month { color: var(--text-muted); opacity: 0.5; }
+[data-theme="dark"] .cdp-day--weekend:not(.cdp-day--other-month):not(:disabled):not(.cdp-day--selected) { color: #4fb3ff; }
+[data-theme="dark"] .cdp-day:disabled { color: var(--border-color); }
+[data-theme="dark"] .cdp-today-btn { color: #4fb3ff; }
+[data-theme="dark"] .cdp-today-btn:hover { background: #1a2540; }
+[data-theme="dark"] .cdp-clear-btn { color: var(--text-muted); }

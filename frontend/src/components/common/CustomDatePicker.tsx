@@ -1,15 +1,18 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import ReactDOM from "react-dom";
+import { FaChevronUp } from "react-icons/fa6";
+import { FaCalendarAlt, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import './CustomDatePicker.css';
 
 interface CustomDatePickerProps {
-    value: string; // iso dátum YYYY-MM-DD
-    onChange: (value: string) => void; 
+    value: string;
+    onChange: (value: string) => void;
     placeholder?: string;
-    minDate?: string; // iso dátum YYYY-MM-DD
-    maxDate?: string; // iso dátum YYYY-MM-DD
+    minDate?: string;
+    maxDate?: string;
     disabled?: boolean;
     name?: string;
-    yearsAhead?: number; // hány évet generáljon előre
+    yearsAhead?: number;
 }
 
 type ViewMode = "days" | "months" | "years";
@@ -28,7 +31,6 @@ const MONTHS_SHORT_HU = [
 
 const WEEKDAYS_HU = ["H", "K", "Sz", "Cs", "P", "Szo", "V"];
 
-// hány hétfővel indul ugye ez az ISO 8601
 function getDayOfWeekISO(date: Date): number {
     const d = date.getDay();
     return d === 0 ? 6 : d - 1;
@@ -36,9 +38,7 @@ function getDayOfWeekISO(date: Date): number {
 
 function isoToDate(iso: string): Date | null {
     if (!iso) return null;
-
     const [y, m, d] = iso.split('-').map(Number);
-
     return new Date(y, m - 1, d);
 }
 
@@ -58,27 +58,7 @@ function sameDay(a: Date, b: Date): boolean {
 }
 
 const ChevronIcon = ({ open }: { open: boolean }) => (
-    <svg
-        className={`cdp-chevron ${open ? 'cdp-chevron--open' : ''}`}
-        width="16" height="16" viewBox="0 0 16 16" fill="none"
-    >
-        <path
-            d="M3 6L8 11L13 6"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
-    </svg>
-);
-
-const CalendarIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="cdp-trigger-icon">
-        <rect x="1.5" y="3" width="13" height="11.5" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M5 1.5V4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M11 1.5V4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M1.5 7H14.5" stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
+    <FaChevronUp className={`cdp-chevron ${open ? 'cdp-chevron--open' : ''}`} />
 );
 
 const CustomDatePicker = ({
@@ -96,105 +76,111 @@ const CustomDatePicker = ({
 
     const selectedDate = isoToDate(value);
 
-    const [viewYear, setViewYear] = useState(selectedDate ? selectedDate.getFullYear() : today.getFullYear());
-    const [viewMonth, setViewMonth] = useState(selectedDate ? selectedDate.getMonth() : today.getMonth());
+    const getDefaultView = () => {
+        if (selectedDate) return { year: selectedDate.getFullYear(), month: selectedDate.getMonth() };
+        const maxD_ = maxDate ? isoToDate(maxDate) : null;
+        const minD_ = minDate ? isoToDate(minDate) : null;
+        if (maxD_ && today > maxD_) return { year: maxD_.getFullYear(), month: maxD_.getMonth() };
+        if (minD_ && today < minD_) return { year: minD_.getFullYear(), month: minD_.getMonth() };
+        return { year: today.getFullYear(), month: today.getMonth() };
+    };
+    const defaultView = getDefaultView();
+    const [viewYear, setViewYear] = useState(defaultView.year);
+    const [viewMonth, setViewMonth] = useState(defaultView.month);
     const [viewMode, setViewMode] = useState<ViewMode>("days");
     const [open, setOpen] = useState(false);
     const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({});
 
-    const ref = useRef<HTMLDivElement>(null);
+    const rootRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
 
     const minD = minDate ? isoToDate(minDate) : null;
     const maxD = maxDate ? isoToDate(maxDate) : null;
 
     const currentYear = today.getFullYear();
-    const startYear = minD ? minD.getFullYear() : currentYear;
+    const startYear = minD ? minD.getFullYear() : currentYear - 100;
     const endYear = maxD ? maxD.getFullYear() : currentYear + yearsAhead;
     const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
 
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
-                setOpen(false);
-                setViewMode("days");
-            }
-        };
+    const updatePanelPosition = useCallback(() => {
+        if (!triggerRef.current) return;
+        const rect = triggerRef.current.getBoundingClientRect();
+        const panelHeight = panelRef.current?.offsetHeight ?? 320;
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
 
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
+        let top: number;
+        if (spaceBelow >= panelHeight + 8 || spaceBelow >= spaceAbove) {
+            top = rect.bottom + window.scrollY;
+        } else {
+            top = rect.top + window.scrollY - panelHeight - 4;
+        }
+
+        setPanelStyle({
+            position: 'absolute',
+            top,
+            left: rect.left + window.scrollX,
+            width: rect.width,
+            zIndex: 9999,
+        });
     }, []);
 
     useEffect(() => {
-        const close = () => {
+        if (!open) return;
+        const handler = (e: MouseEvent) => {
+            const target = e.target as Node;
+            if (triggerRef.current?.contains(target)) return; 
+            if (panelRef.current?.contains(target)) return;
             setOpen(false);
             setViewMode("days");
         };
-        window.addEventListener('scroll', close, true);
-        window.addEventListener('resize', close);
-        return () => {
-            window.removeEventListener('scroll', close, true);
-            window.removeEventListener('resize', close);
-        };
-    }, []);
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, [open]);
 
     useEffect(() => {
-        if (open && triggerRef.current) {
-            const rect = triggerRef.current.getBoundingClientRect();
-            setPanelStyle({
-                top: rect.bottom,
-                left: rect.left,
-                width: rect.width,
-            });
+        if (!open) return;
+        const handler = () => updatePanelPosition();
+        window.addEventListener('scroll', handler, true);
+        window.addEventListener('resize', handler);
+        return () => {
+            window.removeEventListener('scroll', handler, true);
+            window.removeEventListener('resize', handler);
+        };
+    }, [open, updatePanelPosition]);
+
+    useEffect(() => {
+        if (open) {
+            requestAnimationFrame(() => updatePanelPosition());
         }
-    }, [open]);
+    }, [open, viewMode, updatePanelPosition]);
 
     useEffect(() => {
         if (selectedDate) {
             setViewYear(selectedDate.getFullYear());
             setViewMonth(selectedDate.getMonth());
         }
-    }, [value]);
+    }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
     function buildDays() {
         const firstDay = new Date(viewYear, viewMonth, 1);
         const startOffset = getDayOfWeekISO(firstDay);
-
         const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
         const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
 
-        const cells: Array<{
-            date: Date;
-            currentMonth: boolean;
-            dayNum: number;
-        }> = [];
+        const cells: Array<{ date: Date; currentMonth: boolean; dayNum: number }> = [];
 
         for (let i = startOffset - 1; i >= 0; i--) {
-            cells.push({
-                date: new Date(viewYear, viewMonth - 1, prevMonthDays - i),
-                currentMonth: false,
-                dayNum: prevMonthDays - i,
-            });
+            cells.push({ date: new Date(viewYear, viewMonth - 1, prevMonthDays - i), currentMonth: false, dayNum: prevMonthDays - i });
         }
-
         for (let d = 1; d <= daysInMonth; d++) {
-            cells.push({
-                date: new Date(viewYear, viewMonth, d),
-                currentMonth: true,
-                dayNum: d,
-            });
+            cells.push({ date: new Date(viewYear, viewMonth, d), currentMonth: true, dayNum: d });
         }
-
         const remaining = 42 - cells.length;
-
         for (let d = 1; d <= remaining; d++) {
-            cells.push({
-                date: new Date(viewYear, viewMonth + 1, d),
-                currentMonth: false,
-                dayNum: d,
-            });
+            cells.push({ date: new Date(viewYear, viewMonth + 1, d), currentMonth: false, dayNum: d });
         }
-
         return cells;
     }
 
@@ -212,28 +198,19 @@ const CustomDatePicker = ({
     }
 
     function prevMonth() {
-        if (viewMonth === 0) {
-            setViewMonth(11);
-            setViewYear(y => y - 1);
-        } else {
-            setViewMonth(m => m - 1);
-        }
+        if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+        else setViewMonth(m => m - 1);
     }
 
     function nextMonth() {
-        if (viewMonth === 11) {
-            setViewMonth(0);
-            setViewYear(y => y + 1);
-        } else {
-            setViewMonth(m => m + 1);
-        }
+        if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+        else setViewMonth(m => m + 1);
     }
 
     function goToToday() {
         setViewYear(today.getFullYear());
         setViewMonth(today.getMonth());
         setViewMode("days");
-
         if (!isDayDisabled(today)) {
             onChange(dateToISO(today));
             setOpen(false);
@@ -246,20 +223,13 @@ const CustomDatePicker = ({
 
     function formatDisplayDate(iso: string): string {
         const d = isoToDate(iso);
-
         if (!d) return "";
-
-        return d.toLocaleDateString("hu-HU", {
-            year: "numeric",
-            month: "long",
-            day: "numeric", 
-        });
+        return d.toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric" });
     }
 
     function formatWeekdayLabel(iso: string): string {
         const d = isoToDate(iso);
         if (!d) return "";
-
         return d.toLocaleDateString("hu-HU", { weekday: "long" });
     }
 
@@ -272,21 +242,41 @@ const CustomDatePicker = ({
     const isNextMonthDisabled = maxD
         ? viewYear > maxD.getFullYear() || (viewYear === maxD.getFullYear() && viewMonth >= maxD.getMonth())
         : false;
-    
+
+    const handleTriggerClick = () => {
+        if (disabled) return;
+        if (!open && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            const estimatedPanelHeight = 320;
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            const top = (spaceBelow >= estimatedPanelHeight + 8 || spaceBelow >= spaceAbove)
+                ? rect.bottom + window.scrollY
+                : rect.top + window.scrollY - estimatedPanelHeight - 4;
+            setPanelStyle({
+                position: 'absolute',
+                top,
+                left: rect.left + window.scrollX,
+                width: rect.width,
+                zIndex: 9999,
+            });
+        }
+        setOpen(prev => !prev);
+    };
 
     return (
-        <div className={`cdp-root ${disabled ? 'cdp-root--disabled' : ''}`} ref={ref}>
+        <div className={`cdp-root ${disabled ? 'cdp-root--disabled' : ''}`} ref={rootRef}>
             {name && <input type="hidden" name={name} value={value} />}
 
             <button
                 ref={triggerRef}
                 type="button"
                 className={`cdp-trigger ${open ? 'cdp-trigger--open' : ''}`}
-                onClick={() => !disabled && setOpen(p => !p)}
+                onClick={handleTriggerClick}
                 disabled={disabled}
             >
                 <span className="cdp-trigger-content">
-                    <CalendarIcon />
+                    <FaCalendarAlt className="cdp-trigger-icon" />
                     {value ? (
                         <span className="cdp-trigger-text">
                             <span className="cdp-trigger-label">{formatDisplayDate(value)}</span>
@@ -299,8 +289,8 @@ const CustomDatePicker = ({
                 <ChevronIcon open={open} />
             </button>
 
-            {open && (
-                <div className="cdp-panel" style={panelStyle}>
+            {open && ReactDOM.createPortal(
+                <div className="cdp-panel" style={panelStyle} ref={panelRef}>
                     <div className="cdp-nav">
                         <button
                             type="button"
@@ -308,26 +298,20 @@ const CustomDatePicker = ({
                             onClick={prevMonth}
                             disabled={isPrevMonthDisabled || viewMode !== "days"}
                             title="Előző hónap"
-                        >
-                            ‹
-                        </button>
+                        ><FaArrowLeft /></button>
 
                         <div className="cdp-nav-center">
                             <button
                                 type="button"
                                 className={`cdp-nav-month-btn ${viewMode === 'months' ? 'cdp-nav-month-btn--active' : ''}`}
                                 onClick={() => setViewMode(m => m === "months" ? "days" : "months")}
-                            >
-                                {MONTHS_HU[viewMonth]}
-                            </button>
+                            >{MONTHS_HU[viewMonth]}</button>
                             <span className="cdp-nav-sep">·</span>
                             <button
                                 type="button"
                                 className={`cdp-nav-year-btn ${viewMode === "years" ? "cdp-nav-year-btn--active" : ''}`}
                                 onClick={() => setViewMode(m => m === "years" ? "days" : "years")}
-                            >
-                                {viewYear}
-                            </button>
+                            >{viewYear}</button>
                         </div>
 
                         <button
@@ -336,9 +320,7 @@ const CustomDatePicker = ({
                             onClick={nextMonth}
                             disabled={isNextMonthDisabled || viewMode !== "days"}
                             title="Következő hónap"
-                        >
-                            ›
-                        </button>
+                        ><FaArrowRight /></button>
                     </div>
 
                     {viewMode === "months" && (
@@ -348,13 +330,8 @@ const CustomDatePicker = ({
                                     key={i}
                                     type="button"
                                     className={`cdp-month-opt ${i === viewMonth ? 'cdp-month-opt--active' : ''}`}
-                                    onClick={() => {
-                                        setViewMonth(i);
-                                        setViewMode("days");
-                                    }}
-                                >
-                                    {m}
-                                </button>
+                                    onClick={() => { setViewMonth(i); setViewMode("days"); }}
+                                >{m}</button>
                             ))}
                         </div>
                     )}
@@ -365,14 +342,9 @@ const CustomDatePicker = ({
                                 <button
                                     key={y}
                                     type="button"
-                                    className={`cdp-year-opt ${y === viewYear ? 'cdp-year-opt--active': ''}`}
-                                    onClick={() => {
-                                        setViewYear(y);
-                                        setViewMode("days");
-                                    }}
-                                >
-                                    {y}
-                                </button>
+                                    className={`cdp-year-opt ${y === viewYear ? 'cdp-year-opt--active' : ''}`}
+                                    onClick={() => { setViewYear(y); setViewMode("days"); }}
+                                >{y}</button>
                             ))}
                         </div>
                     )}
@@ -381,20 +353,14 @@ const CustomDatePicker = ({
                         <>
                             <div className="cdp-weekdays">
                                 {WEEKDAYS_HU.map((d, i) => (
-                                    <div
-                                        key={d}
-                                        className={`cdp-weekday ${i >= 5 ? 'cdp-weekday--weekend' : ''}`}
-                                    >
-                                        {d}
-                                    </div>
+                                    <div key={d} className={`cdp-weekday ${i >= 5 ? 'cdp-weekday--weekend' : ''}`}>{d}</div>
                                 ))}
                             </div>
-
                             <div className="cdp-days">
                                 {days.map(({ date, currentMonth, dayNum }, idx) => {
                                     const isSelected = selectedDate ? sameDay(date, selectedDate) : false;
                                     const isToday = sameDay(date, today);
-                                    const disabled = isDayDisabled(date);
+                                    const isDisabled = isDayDisabled(date);
                                     const dowISO = getDayOfWeekISO(date);
                                     const isWeekend = dowISO >= 5;
 
@@ -407,16 +373,12 @@ const CustomDatePicker = ({
                                                 !currentMonth ? 'cdp-day--other-month' : '',
                                                 isToday && !isSelected ? 'cdp-day--today' : '',
                                                 isSelected ? 'cdp-day--selected' : '',
-                                                isWeekend && currentMonth ? 'cdp-day-weekend' : '',
+                                                isWeekend && currentMonth ? 'cdp-day--weekend' : '',
                                             ].filter(Boolean).join(' ')}
                                             onClick={() => handleDayClick(date)}
-                                            disabled={disabled}
-                                            title={date.toLocaleDateString("hu-HU", {
-                                                year: "numeric", month: "long", day: "numeric",
-                                            })}
-                                        >
-                                            {dayNum}
-                                        </button>
+                                            disabled={isDisabled}
+                                            title={date.toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric" })}
+                                        >{dayNum}</button>
                                     );
                                 })}
                             </div>
@@ -424,16 +386,13 @@ const CustomDatePicker = ({
                     )}
 
                     <div className="cdp-footer">
-                        <button type="button" className="cdp-today-btn" onClick={goToToday}>
-                            Ma
-                        </button>
+                        <button type="button" className="cdp-today-btn" onClick={goToToday}>Ma</button>
                         {value && (
-                            <button type="button" className="cdp-clear-btn" onClick={clearValue}>
-                                Törlés
-                            </button>
+                            <button type="button" className="cdp-clear-btn" onClick={clearValue}>Törlés</button>
                         )}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

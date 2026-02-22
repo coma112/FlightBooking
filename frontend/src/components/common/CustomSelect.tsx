@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import './CustomSelect.css';
 import { FaCheck } from 'react-icons/fa';
+import { FaChevronUp } from "react-icons/fa6";
 
 export interface SelectOption {
     value: string;
@@ -21,21 +22,7 @@ interface CustomSelectProps {
 }
 
 const ChevronIcon = ({ open }: { open: boolean }) => (
-    <svg
-    className={`cs-chevron ${open ? 'cs-chevron--open' : ''}`}
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-  >
-    <path
-      d="M3 6L8 11L13 6"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
+  <FaChevronUp className={`cs-chevron ${open ? 'cs-chevron--open' : ''}`}/>
 );
 
 const CustomSelect = ({ 
