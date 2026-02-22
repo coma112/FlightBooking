@@ -60,3 +60,12 @@ Levideóztam a fejlesztésemet és utamat, hogy később tanulni tudjak belőle.
 - [3. Videó](https://youtu.be/-UsZ7uY9pKQ) - Confirmation Page
 - [2. Videó](https://youtu.be/Coqe4rumCsI) - Booking Form
 - [1. Videó](https://youtu.be/7Q3Nb3xZuE8) - Home Page (SHOWCASE)
+
+## Tervek
+
+- Bankkártyás fizetés (stripe, barion, apple/googlepay)
+- QR kód mint passboard
+- Custom Date Selector
+- Retúr vagy csak oda
+- X és Y idő között lévő dolgok.
+- Email visszaigazolás.

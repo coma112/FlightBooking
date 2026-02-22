@@ -13,6 +13,7 @@ export interface BookingData extends BookingFormData {
   totalPrice: number;
   bookingDate: string;
   bookingReference?: string;
+  paymentMethod?: string;
 }
 
 export interface PriceBreakdown {

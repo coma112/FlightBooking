@@ -4,6 +4,7 @@ import Footer from '../components/common/Footer';
 import BookingForm from '../components/booking/BookingForm';
 import BookingSummary from '../components/booking/BookingSummary';
 import SeatSelector from '../components/booking/SeatSelector';
+import PaymentModal from '../components/payment/PaymentModal';
 import './BookingPage.css';
 import type { BookingFormData, BookingData } from '../types/booking';
 import { bookingApi } from '../services/api';
@@ -49,6 +50,13 @@ const BookingPage = ({
   const [seatError, setSeatError] = useState<string | null>(null);
   const [showSeatSelector, setShowSeatSelector] = useState(false);
   const [currentFormData, setCurrentFormData] = useState<BookingFormData | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [pendingBooking, setPendingBooking] = useState<{
+    reference: string;
+    price: number;
+    bookingDate: string;
+    seat: SeatResponse;
+  } | null>(null);
 
   const handleFormSubmit = (formData: BookingFormData) => {
     setSeatError(null);

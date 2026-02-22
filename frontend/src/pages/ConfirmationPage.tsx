@@ -1,5 +1,6 @@
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import QrCode from "../components/common/QrCode";
 import { FaHome, FaPrint, FaPlane, FaUser, FaEnvelope, FaPhone, FaPassport, FaCalendar, FaInfoCircle, FaCheck } from 'react-icons/fa';
 import { MdFlightTakeoff, MdFlightLand, MdEventSeat } from 'react-icons/md';
 import './ConfirmationPage.css';
@@ -16,16 +17,8 @@ interface Flight {
     departureTime: string;
     arrivalTime: string;
     aircraftType: string;
-    prices: {
-        ECONOMY: number;
-        BUSINESS: number;
-        FIRST: number;
-    };
-    availableSeats: {
-        ECONOMY: number;
-        BUSINESS: number;
-        FIRST: number;
-    };
+    prices: { ECONOMY: number; BUSINESS: number; FIRST: number; };
+    availableSeats: { ECONOMY: number; BUSINESS: number; FIRST: number; };
     airline: string;
 }
 
@@ -35,12 +28,21 @@ interface ConfirmationPageProps {
     onBackToHome: () => void;
 }
 
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+    stripe: '💳 Bankkártya (Stripe)',
+    barion: '🏦 Barion',
+    apple_pay: '🍎 Apple Pay',
+    google_pay: '🔵 Google Pay',
+};
+
 const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPageProps) => {
-    const handlePrint = () => {
-        window.print();
-    };
+    const handlePrint = () => window.print();
 
     const bookingReference = bookingData.bookingReference ?? '—';
+    const qrValue = `SKYBOOKER:BOOKING:${bookingReference}:${flight.flightNumber}`;
+    const paymentLabel = bookingData.paymentMethod
+        ? (PAYMENT_METHOD_LABELS[bookingData.paymentMethod] ?? bookingData.paymentMethod)
+        : '—';
 
     return (
         <div className="confirmation-page">
@@ -54,7 +56,7 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                         </div>
                         <h1 className="success-title">Sikeres foglalás!</h1>
                         <p className="success-subtitle">
-                            Foglalási visszaigazolást elküldtük a megadott email címre.
+                            Foglalási visszaigazolást elküldtünk a megadott email címre.
                         </p>
                     </div>
 
@@ -68,8 +70,7 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                                 <h3 className="section-title">Foglalási információk</h3>
                                 <div className="detail-row">
                                     <span className="detail-label">
-                                        <FaInfoCircle className="label-icon" />
-                                        Foglalási azonosító
+                                        <FaInfoCircle className="label-icon" /> Foglalási azonosító
                                     </span>
                                     <span className="detail-value" style={{ letterSpacing: '2px', fontSize: '1.1rem' }}>
                                         {bookingReference}
@@ -77,12 +78,39 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                                 </div>
                                 <div className="detail-row">
                                     <span className="detail-label">
-                                        <FaCalendar className="label-icon" />
-                                        Foglalás dátuma
+                                        <FaCalendar className="label-icon" /> Foglalás dátuma
                                     </span>
                                     <span className="detail-value">
                                         {formatDate(bookingData.bookingDate)}
                                     </span>
+                                </div>
+                                {bookingData.paymentMethod && (
+                                    <div className="detail-row">
+                                        <span className="detail-label">
+                                            💳 Fizetési mód
+                                        </span>
+                                        <span className="detail-value">{paymentLabel}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="details-section">
+                                <h3 className="section-title">📱 Check-in QR kód</h3>
+                                <div className="qr-section">
+                                    <QrCode
+                                        value={qrValue}
+                                        size={180}
+                                    />
+                                    <div className="qr-info">
+                                        <p className="qr-description">
+                                            Mutassa ezt a QR kódot a repülőtéren a check-in pultjainál.
+                                            Az emailben is megkapja.
+                                        </p>
+                                        <div className="qr-ref-display">
+                                            <span className="qr-ref-label">Azonosító</span>
+                                            <span className="qr-ref-value">{bookingReference}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -90,15 +118,13 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                                 <h3 className="section-title">Járat információk</h3>
                                 <div className="detail-row">
                                     <span className="detail-label">
-                                        <FaPlane className="label-icon" />
-                                        Járatszám
+                                        <FaPlane className="label-icon" /> Járatszám
                                     </span>
                                     <span className="detail-value">{flight.flightNumber}</span>
                                 </div>
                                 <div className="detail-row">
                                     <span className="detail-label">
-                                        <FaPlane className="label-icon" />
-                                        Légitársaság
+                                        <FaPlane className="label-icon" /> Légitársaság
                                     </span>
                                     <span className="detail-value">{flight.airline}</span>
                                 </div>
@@ -127,89 +153,52 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
 
                                 <div className="detail-row" style={{ marginTop: '1rem' }}>
                                     <span className="detail-label">
-                                        <FaCalendar className="label-icon" />
-                                        Indulás dátuma
+                                        <FaCalendar className="label-icon" /> Indulás dátuma
                                     </span>
-                                    <span className="detail-value">
-                                        {formatDate(flight.departureTime)}
-                                    </span>
+                                    <span className="detail-value">{formatDate(flight.departureTime)}</span>
                                 </div>
                             </div>
 
                             <div className="details-section">
                                 <h3 className="section-title">Utas adatok</h3>
                                 <div className="detail-row">
-                                    <span className="detail-label">
-                                        <FaUser className="label-icon" />
-                                        Név
-                                    </span>
-                                    <span className="detail-value">
-                                        {bookingData.lastName} {bookingData.firstName}
-                                    </span>
+                                    <span className="detail-label"><FaUser className="label-icon" /> Név</span>
+                                    <span className="detail-value">{bookingData.lastName} {bookingData.firstName}</span>
                                 </div>
-
                                 <div className="detail-row">
-                                    <span className="detail-label">
-                                        <FaEnvelope className="label-icon" />
-                                        Email
-                                    </span>
-                                    <span className="detail-value">
-                                        {bookingData.email}
-                                    </span>
+                                    <span className="detail-label"><FaEnvelope className="label-icon" /> Email</span>
+                                    <span className="detail-value">{bookingData.email}</span>
                                 </div>
-
                                 <div className="detail-row">
-                                    <span className="detail-label">
-                                        <FaPhone className="label-icon" />
-                                        Telefonszám
-                                    </span>
-                                    <span className="detail-value">
-                                        {bookingData.phone}
-                                    </span>
+                                    <span className="detail-label"><FaPhone className="label-icon" /> Telefonszám</span>
+                                    <span className="detail-value">{bookingData.phone}</span>
                                 </div>
-
                                 <div className="detail-row">
-                                    <span className="detail-label">
-                                        <FaPassport className="label-icon" />
-                                        Útlevélszám
-                                    </span>
-                                    <span className="detail-value">
-                                        {bookingData.passportNumber}
-                                    </span>
+                                    <span className="detail-label"><FaPassport className="label-icon" /> Útlevélszám</span>
+                                    <span className="detail-value">{bookingData.passportNumber}</span>
                                 </div>
-
                                 <div className="detail-row">
-                                    <span className="detail-label">
-                                        <FaCalendar className="label-icon" />
-                                        Születési dátum
-                                    </span>
-                                    <span className="detail-value">
-                                        {formatDate(bookingData.birthDate)}
-                                    </span>
+                                    <span className="detail-label"><FaCalendar className="label-icon" /> Születési dátum</span>
+                                    <span className="detail-value">{formatDate(bookingData.birthDate)}</span>
                                 </div>
+                            </div>
 
-                                <div className="details-section">
-                                    <h3 className="section-title">Osztály és ár</h3>
-                                    <div className="detail-row">
-                                        <span className="detail-label">
-                                            <MdEventSeat className="label-icon" />
-                                            Osztály
-                                        </span>
-                                        <span className="detail-value">{getClassLabel(bookingData.seatClass)}</span>
-                                    </div>
-
-                                    <div className="total-price-row">
-                                        <span className="total-label">Végösszeg:</span>
-                                        <span className="total-value">{formatPrice(bookingData.totalPrice)}</span>
-                                    </div>
+                            <div className="details-section">
+                                <h3 className="section-title">Osztály és ár</h3>
+                                <div className="detail-row">
+                                    <span className="detail-label"><MdEventSeat className="label-icon" /> Osztály</span>
+                                    <span className="detail-value">{getClassLabel(bookingData.seatClass)}</span>
+                                </div>
+                                <div className="total-price-row">
+                                    <span className="total-label">Végösszeg:</span>
+                                    <span className="total-value">{formatPrice(bookingData.totalPrice)}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="confirmation-notice">
+                        <div className="confirmation-notice" style={{ margin: '0 2rem 1.5rem' }}>
                             <h3 className="notice-title">
-                                <FaInfoCircle className="notice-icon" />
-                                Fontos információk
+                                <FaInfoCircle className="notice-icon" /> Fontos információk
                             </h3>
                             <p className="notice-text">
                                 Kérjük, érkezzen legalább 2 órával az indulás előtt a repülőtérre.
@@ -220,14 +209,12 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                             </p>
                         </div>
 
-                        <div className="action-buttons">
+                        <div className="action-buttons" style={{ padding: '0 2rem 2rem' }}>
                             <button className="secondary-btn" onClick={handlePrint}>
-                                <FaPrint className="btn-icon" />
-                                Nyomtatás
+                                <FaPrint className="btn-icon" /> Nyomtatás
                             </button>
                             <button className="primary-btn" onClick={onBackToHome}>
-                                <FaHome className="btn-icon" />
-                                Vissza a főoldalra
+                                <FaHome className="btn-icon" /> Vissza a főoldalra
                             </button>
                         </div>
                     </div>
