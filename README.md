@@ -50,6 +50,7 @@ docker compose up --build
 Levideóztam a fejlesztésemet és utamat, hogy később tanulni tudjak belőle.
 0 effort van a videókban, úgy éreztem hogy felveszem és felvettem.
 
+- [12. Videó](https://youtu.be/nwfY15BmhCY) - CustomDatePicker Common Component
 - [11. Videó](https://youtu.be/LAX7pnEObB0) - QR Kód, Payment, Email
 - [10. Videó](https://youtu.be/gDG8U9bTNwo) - CustomSelect Common Component
 - [9. Videó](https://youtu.be/AxO6JAMDNCw) - Theme Context, Contact Page
@@ -64,6 +65,5 @@ Levideóztam a fejlesztésemet és utamat, hogy később tanulni tudjak belőle.
 
 ## Tervek
 
-- Custom Date Selector
 - Retúr vagy csak oda
 - X és Y idő között lévő dolgok.
