@@ -36,7 +36,7 @@ public class BookingServiceImpl implements BookingService {
         Flight flight = flightRepository.findById(request.getFlightId())
                 .orElseThrow(() -> new ResourceNotFoundException("Nem található a járat: " + request.getFlightId()));
 
-        Seat seat = seatRepository.findByFlightAndSeatNumber(flight, request.getSeatNumber())
+        Seat seat = seatRepository.findFirstByFlightAndSeatNumber(flight, request.getSeatNumber())
                 .orElseThrow(() -> new ResourceNotFoundException("Nem található az ülés: " + request.getSeatNumber()));
 
         if (!seat.isAvailable()) {

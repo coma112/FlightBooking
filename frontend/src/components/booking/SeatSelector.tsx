@@ -18,15 +18,15 @@ interface SeatSelectorProps {
 }
 
 const CLASS_COLUMNS: Record<SeatClass, string[]> = {
-  FIRST:    ['A', 'C', 'D', 'F'],           // 2-2 (első osztály, széles ülések)
-  BUSINESS: ['A', 'C', 'D', 'F'],           // 2-2 (business)
-  ECONOMY:  ['A', 'B', 'C', 'D', 'E', 'F']  // 3-3 (economy)
+  FIRST:    ['A', 'C', 'D', 'F'],
+  BUSINESS: ['A', 'C', 'D', 'F'],
+  ECONOMY:  ['A', 'B', 'C', 'D', 'E', 'F']
 };
 
 const AISLE_AFTER: Record<SeatClass, string> = {
-  FIRST: 'C',      // A-C után folyosó, majd D-F
-  BUSINESS: 'C',   // ugyanaz
-  ECONOMY: 'C'     // A-B-C után folyosó, D-E-F
+  FIRST: 'C',
+  BUSINESS: 'C',
+  ECONOMY: 'C'
 };
 
 const EMERGENCY_ROWS: Record<SeatClass, number[]> = {
@@ -119,7 +119,6 @@ const SeatSelector = ({
     };
     fetchAll();
   }, [flightId]);
-
 
   const seatMap = useMemo(() => buildSeatMap(allSeats), [allSeats]);
   const rowRanges = useMemo(() => getRowRanges(allSeats), [allSeats]);
@@ -311,25 +310,30 @@ const SeatSelector = ({
                           ? `available ${cell.seatClass.toLowerCase()}`
                           : 'occupied';
 
-                        return (
-                          <>
-                            {ci > 0 && cols[ci - 1] === aisleAfter && (
-                              <div key={`aisle-${rowNum}`} className="aisle-gap">
-                                <div className="aisle-line" />
-                              </div>
-                            )}
-                            
-                            <button
-                              key={cell.seatNumber}
-                              className={`seat-btn ${seatCls}`}
-                              onClick={() => handleSeatClick(cell)}
-                              disabled={!cell.available}
-                              title={cell.available ? `${cell.seatNumber} – ${cell.seatClass}` : 'Foglalt'}
-                            >
-                              <span className="seat-label">{col}</span>
-                            </button>
-                          </>
+                        // Aisle és seat elem tömbként, key a seat gombon és az aisle div-en
+                        const elements = [];
+
+                        if (ci > 0 && cols[ci - 1] === aisleAfter) {
+                          elements.push(
+                            <div key={`aisle-${rowNum}-${ci}`} className="aisle-gap">
+                              <div className="aisle-line" />
+                            </div>
+                          );
+                        }
+
+                        elements.push(
+                          <button
+                            key={cell.seatNumber}
+                            className={`seat-btn ${seatCls}`}
+                            onClick={() => handleSeatClick(cell)}
+                            disabled={!cell.available}
+                            title={cell.available ? `${cell.seatNumber} – ${cell.seatClass}` : 'Foglalt'}
+                          >
+                            <span className="seat-label">{col}</span>
+                          </button>
                         );
+
+                        return elements;
                       })}
                     </div>
                   </div>

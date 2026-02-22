@@ -50,6 +50,7 @@ docker compose up --build
 Levideóztam a fejlesztésemet és utamat, hogy később tanulni tudjak belőle.
 0 effort van a videókban, úgy éreztem hogy felveszem és felvettem.
 
+- [11. Videó](https://youtu.be/LAX7pnEObB0) - QR Kód, Payment, Email
 - [10. Videó](https://youtu.be/gDG8U9bTNwo) - CustomSelect Common Component
 - [9. Videó](https://youtu.be/AxO6JAMDNCw) - Theme Context, Contact Page
 - [8. Videó](https://youtu.be/bIKdVYV2WcE) - 404 Oldal és React Router DOM
@@ -63,9 +64,6 @@ Levideóztam a fejlesztésemet és utamat, hogy később tanulni tudjak belőle.
 
 ## Tervek
 
-- Bankkártyás fizetés (stripe, barion, apple/googlepay)
-- QR kód mint passboard
 - Custom Date Selector
 - Retúr vagy csak oda
 - X és Y idő között lévő dolgok.
-- Email visszaigazolás.

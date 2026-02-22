@@ -50,20 +50,24 @@ const BookingPage = ({
   const [seatError, setSeatError] = useState<string | null>(null);
   const [showSeatSelector, setShowSeatSelector] = useState(false);
   const [currentFormData, setCurrentFormData] = useState<BookingFormData | null>(null);
+
+  // Fizetési modal state-ek
   const [showPayment, setShowPayment] = useState(false);
   const [pendingBooking, setPendingBooking] = useState<{
     reference: string;
     price: number;
     bookingDate: string;
-    seat: SeatResponse;
+    formData: BookingFormData;
   } | null>(null);
 
+  // 1. lépés: form kitöltése → ülésválasztó megnyitása
   const handleFormSubmit = (formData: BookingFormData) => {
     setSeatError(null);
     setCurrentFormData(formData);
     setShowSeatSelector(true);
   };
 
+  // 2. lépés: ülés kiválasztása → foglalás létrehozása a backenden → fizetési modal megnyitása
   const handleSeatConfirm = async (seat: SeatResponse) => {
     if (!currentFormData) return;
     setShowSeatSelector(false);
@@ -84,16 +88,14 @@ const BookingPage = ({
         seatNumber: seat.seatNumber,
       });
 
-      const bookingData: BookingData = {
-        ...currentFormData,
-        flightId: flight.id,
-        seatClass,
-        totalPrice: Number(bookingResponse.totalPrice),
+      // Foglalás létrejött (PENDING státuszban), most jön a fizetés
+      setPendingBooking({
+        reference: bookingResponse.bookingReference,
+        price: Number(bookingResponse.totalPrice),
         bookingDate: bookingResponse.bookingDate,
-        bookingReference: bookingResponse.bookingReference,
-      };
-
-      onConfirm(bookingData);
+        formData: currentFormData,
+      });
+      setShowPayment(true);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Hiba történt a foglalás során';
       setSeatError(msg);
@@ -102,6 +104,34 @@ const BookingPage = ({
       setIsSubmitting(false);
     }
   };
+
+  // 3. lépés: sikeres fizetés → visszaigazolás oldalra navigálás
+  const handlePaymentSuccess = (paymentMethod: string) => {
+    if (!pendingBooking) return;
+
+    const bookingData: BookingData = {
+      ...pendingBooking.formData,
+      flightId: flight.id,
+      seatClass,
+      totalPrice: pendingBooking.price,
+      bookingDate: pendingBooking.bookingDate,
+      bookingReference: pendingBooking.reference,
+      paymentMethod,
+    };
+
+    setShowPayment(false);
+    onConfirm(bookingData);
+  };
+
+  // Fizetési modal bezárása (pl. ha a felhasználó mégsem fizet)
+  const handlePaymentClose = () => {
+    setShowPayment(false);
+    // A foglalás PENDING státuszban marad, a felhasználó később visszakeresheti
+  };
+
+  const passengerName = currentFormData
+    ? `${currentFormData.lastName} ${currentFormData.firstName}`
+    : '';
 
   return (
     <div className="booking-page">
@@ -129,13 +159,28 @@ const BookingPage = ({
                 borderRadius: '8px',
                 padding: '1rem',
                 marginBottom: '1rem',
-                fontFamily: 'monospace',
                 color: '#dc2626',
                 fontWeight: 700,
               }}>
                 {seatError}
               </div>
             )}
+
+            {isSubmitting && (
+              <div style={{
+                background: '#e8f4fd',
+                border: '2px solid #0078D4',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem',
+                color: '#005A9E',
+                fontWeight: 700,
+                textAlign: 'center',
+              }}>
+                ⏳ Foglalás létrehozása folyamatban...
+              </div>
+            )}
+
             <BookingForm
               onSubmit={handleFormSubmit}
               loading={isSubmitting}
@@ -154,6 +199,7 @@ const BookingPage = ({
 
       <Footer />
 
+      {/* 2. lépés: Ülésválasztó */}
       {showSeatSelector && (
         <SeatSelector
           flightId={Number(flight.id)}
@@ -163,6 +209,18 @@ const BookingPage = ({
           seatClass={seatClass}
           onConfirm={handleSeatConfirm}
           onClose={() => setShowSeatSelector(false)}
+        />
+      )}
+
+      {/* 3. lépés: Fizetési modal */}
+      {showPayment && pendingBooking && (
+        <PaymentModal
+          bookingReference={pendingBooking.reference}
+          totalPrice={pendingBooking.price}
+          flightNumber={flight.flightNumber}
+          passengerName={passengerName}
+          onSuccess={handlePaymentSuccess}
+          onClose={handlePaymentClose}
         />
       )}
     </div>
