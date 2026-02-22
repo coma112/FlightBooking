@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './FlightSearchForm.css';
+import CustomDatePicker from '../common/CustomDatePicker';
 import { MdFlightLand, MdFlightTakeoff, MdDateRange, MdEventSeat } from "react-icons/md";
 import { IoMdPerson, IoMdSearch } from "react-icons/io";
 import { FaWallet } from "react-icons/fa";
@@ -115,10 +116,6 @@ const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSe
     setFormData(prev => ({ ...prev, passengers: parseInt(e.target.value) }));
   };
 
-  const handleDate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, departureDate: e.target.value }));
-  };
-
   return (
     <form className="flight-search-form" onSubmit={handleSubmit}>
       <div className="form-grid">
@@ -158,15 +155,13 @@ const FlightSearchForm = ({ onSearch, loading = false, initialValues }: FlightSe
             <span className="icon"><MdDateRange /></span>
             Indulás dátuma
           </label>
-          <input
-            type="date"
-            id="departureDate"
-            name="departureDate"
+          <CustomDatePicker 
             value={formData.departureDate}
-            onChange={handleDate}
-            min={new Date().toISOString().split('T')[0]}
+            onChange={val => setFormData(prev => ({ ...prev, departureDate: val }))}
+            placeholder="Válasszon indulási dátumot"
+            minDate={new Date().toISOString().split('T')[0]}
+            yearsAhead={10}
             disabled={prefilling}
-            required
           />
         </div>
 

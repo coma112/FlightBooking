@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CustomDatePicker from '../common/CustomDatePicker';
 import type { FormEvent, ChangeEvent, FocusEvent } from 'react';
 import './BookingForm.css';
 import type { BookingFormData } from '../../types/booking';
@@ -28,6 +29,32 @@ const BookingForm = ({ onSubmit, loading }: BookingFormProps) => {
 
   const [errors, setErrors] = useState<Partial<Record<keyof BookingFormData, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof BookingFormData, boolean>>>({});
+
+  const getMaxBirthDate = () => {
+    const today = new Date();
+    today.setFullYear(today.getFullYear() - 18);
+
+    return today.toISOString().split('T')[0];
+  };
+
+  const getMinBirthDate = () => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 120);
+
+    return d.toISOString().split('T')[0];
+  };
+
+  const handleBirthDateChange = (value: string) => {
+    setFormData(prev => ({ ...prev, birthDate: value }));
+    setTouched(prev => ({ ...prev, birthDate: true }));
+
+    if (value) {
+      const error = validateBirthDate(value);
+      setErrors(prev => ({ ...prev, birthDate: error ?? undefined }));
+    } else {
+      setErrors(prev => ({ ...prev, birthDate: "Kötelező mező!" }));
+    }
+  };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -122,12 +149,6 @@ const BookingForm = ({ onSubmit, loading }: BookingFormProps) => {
     if (validateAllFields()) {
       onSubmit(formData);
     }
-  };
-
-  const getMaxBirthDate = () => {
-    const today = new Date();
-    today.setFullYear(today.getFullYear() - 18);
-    return today.toISOString().split('T')[0];
   };
 
   return (
@@ -255,15 +276,12 @@ const BookingForm = ({ onSubmit, loading }: BookingFormProps) => {
             <FaCalendar className="label-icon" />
             Születési dátum <span className="required">*</span>
           </label>
-          <input
-            type="date"
-            id="birthDate"
-            name="birthDate"
+          <CustomDatePicker 
             value={formData.birthDate}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            max={getMaxBirthDate()}
-            className={`form-input ${touched.birthDate && errors.birthDate ? 'error' : ''}`}
+            onChange={handleBirthDateChange}
+            placeholder="Válasszon születési dátumot"
+            minDate={getMinBirthDate()}
+            maxDate={getMaxBirthDate()}
             disabled={loading}
           />
           {touched.birthDate && errors.birthDate && (
