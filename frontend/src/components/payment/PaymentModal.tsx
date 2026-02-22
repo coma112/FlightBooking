@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import './PaymentModal.css';
-import type { BookingData } from '../../types/booking';
 import { formatPrice } from '../../utils/priceCalculation';
+import { FcSimCardChip } from "react-icons/fc";
+import { MdClose, MdCheck } from "react-icons/md";
 
 interface PaymentModalProps {
   bookingReference: string;
@@ -15,16 +16,6 @@ interface PaymentModalProps {
 type PaymentMethod = 'stripe' | 'barion' | 'apple_pay' | 'google_pay';
 type Step = 'method' | 'card' | 'barion' | 'processing' | 'done';
 
-const TEST_CARDS = [
-  { number: '4242 4242 4242 4242', type: 'Visa', result: 'success', icon: '💳' },
-  { number: '5555 5555 5555 4444', type: 'Mastercard', result: 'success', icon: '💳' },
-  { number: '4000 0000 0000 9995', type: 'Visa (elutasítva)', result: 'decline', icon: '❌' },
-];
-
-const BARION_TEST_ACCOUNTS = [
-  { email: 'buyer@barion.com', password: 'abc123', result: 'Sikeres' },
-];
-
 export default function PaymentModal({
   bookingReference,
   totalPrice,
@@ -34,7 +25,7 @@ export default function PaymentModal({
   onClose,
 }: PaymentModalProps) {
   const [step, setStep] = useState<Step>('method');
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvc, setCardCvc] = useState('');
@@ -42,8 +33,7 @@ export default function PaymentModal({
   const [barionEmail, setBarionEmail] = useState('');
   const [barionPassword, setBarionPassword] = useState('');
   const [error, setError] = useState('');
-  const [processing, setProcessing] = useState(false);
-  const [showTestCards, setShowTestCards] = useState(false);
+  const [, setProcessing] = useState(false);
 
   const formatCardNumber = (val: string) => {
     const digits = val.replace(/\D/g, '').slice(0, 16);
@@ -143,24 +133,16 @@ export default function PaymentModal({
     }
   };
 
-  const fillTestCard = (card: typeof TEST_CARDS[0]) => {
-    setCardNumber(card.number);
-    setCardExpiry('12/26');
-    setCardCvc('123');
-    setCardName('Test Utas');
-    setShowTestCards(false);
-  };
-
   return (
     <div className="payment-overlay" onClick={onClose}>
       <div className="payment-modal" onClick={(e) => e.stopPropagation()}>
 
         <div className="pm-header">
           <div className="pm-header-left">
-            <span className="pm-logo">✈️ SkyBooker Pay</span>
+            <span className="pm-logo">SkyBooker Pay</span>
             <span className="pm-ref">#{bookingReference}</span>
           </div>
-          <button className="pm-close" onClick={onClose}>✕</button>
+          <button className="pm-close" onClick={onClose}><MdClose /></button>
         </div>
 
         <div className="pm-amount-strip">
@@ -168,7 +150,7 @@ export default function PaymentModal({
             <span className="pm-flight-label">{flightNumber} • {passengerName}</span>
             <span className="pm-amount">{formatPrice(totalPrice)}</span>
           </div>
-          <div className="pm-secure">🔒 Biztonságos fizetés</div>
+          <div className="pm-secure">Biztonságos fizetés</div>
         </div>
 
         <div className="pm-body">
@@ -178,7 +160,6 @@ export default function PaymentModal({
               <p className="pm-methods-title">Válasszon fizetési módot</p>
 
               <div className="pm-test-notice">
-                <span>🧪</span>
                 <div>
                   <strong>Teszt mód aktív</strong> – Valódi összeg nem kerül levonásra!
                   <br />Teszt kártyaszám: <code>4242 4242 4242 4242</code>
@@ -249,31 +230,10 @@ export default function PaymentModal({
                 <span className="pm-form-title">💳 Bankkártya adatok</span>
               </div>
 
-              <div className="pm-test-cards-toggle">
-                <button type="button" onClick={() => setShowTestCards(!showTestCards)} className="pm-test-toggle-btn">
-                  🧪 Teszt kártyák {showTestCards ? '▲' : '▼'}
-                </button>
-                {showTestCards && (
-                  <div className="pm-test-cards">
-                    {TEST_CARDS.map((card) => (
-                      <button
-                        key={card.number}
-                        type="button"
-                        className="pm-test-card-item"
-                        onClick={() => fillTestCard(card)}
-                      >
-                        <span>{card.icon} {card.type}</span>
-                        <code>{card.number}</code>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
               <div className="pm-visual-card">
-                <div className="pm-card-chip">⬛</div>
+                <div className="pm-card-chip"><FcSimCardChip /></div>
                 <div className="pm-card-number-display">
-                  {cardNumber || '•••• •••• •••• ••••'}
+                  {cardNumber || '1234 1234 1234 1234'}
                 </div>
                 <div className="pm-card-bottom">
                   <div>
@@ -342,14 +302,14 @@ export default function PaymentModal({
               {error && <div className="pm-error">{error}</div>}
 
               <button type="submit" className="pm-pay-btn">
-                🔒 Fizetés most – {formatPrice(totalPrice)}
+                Fizetés most – {formatPrice(totalPrice)}
               </button>
 
               <div className="pm-brands">
                 <span title="Visa">VISA</span>
                 <span title="Mastercard">MC</span>
                 <span title="American Express">AMEX</span>
-                <span title="Secured by Stripe">🔒 Stripe</span>
+                <span title="Secured by Stripe">Stripe</span>
               </div>
             </form>
           )}
@@ -366,27 +326,6 @@ export default function PaymentModal({
                   <span style={{ fontSize: 28, fontWeight: 800, color: '#703CFF' }}>Barion</span>
                 </div>
                 <p className="pm-barion-sub">Adja meg Barion fiókja adatait</p>
-              </div>
-
-              <div className="pm-test-cards-toggle">
-                <button type="button" onClick={() => setShowTestCards(!showTestCards)} className="pm-test-toggle-btn">
-                  🧪 Teszt fiók adatok {showTestCards ? '▲' : '▼'}
-                </button>
-                {showTestCards && (
-                  <div className="pm-test-cards">
-                    {BARION_TEST_ACCOUNTS.map((acc) => (
-                      <button
-                        key={acc.email}
-                        type="button"
-                        className="pm-test-card-item"
-                        onClick={() => { setBarionEmail(acc.email); setBarionPassword(acc.password); setShowTestCards(false); }}
-                      >
-                        <span>👤 {acc.email}</span>
-                        <code>Jelszó: {acc.password}</code>
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
 
               <div className="pm-field-group">
@@ -425,16 +364,16 @@ export default function PaymentModal({
               <p className="pm-processing-title">Fizetés feldolgozása...</p>
               <p className="pm-processing-sub">Kérjük, ne zárja be ezt az ablakot</p>
               <div className="pm-processing-steps">
-                <div className="pm-step done">✓ Foglalás ellenőrzése</div>
-                <div className="pm-step active">⟳ Fizetés feldolgozása</div>
-                <div className="pm-step">◌ Visszaigazolás küldése</div>
+                <div className="pm-step done">Foglalás ellenőrzése</div>
+                <div className="pm-step active">Fizetés feldolgozása</div>
+                <div className="pm-step">Visszaigazolás küldése</div>
               </div>
             </div>
           )}
 
           {step === 'done' && (
             <div className="pm-success">
-              <div className="pm-success-icon">✅</div>
+              <div className="pm-success-icon"><MdCheck /></div>
               <h2 className="pm-success-title">Sikeres fizetés!</h2>
               <p className="pm-success-sub">Visszaigazoló emailt küldtünk az Ön email címére</p>
               <div className="pm-success-ref">#{bookingReference}</div>

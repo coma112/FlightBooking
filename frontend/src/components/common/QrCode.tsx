@@ -11,10 +11,10 @@ export default function QrCode({ value, size = 200, label }: QrCodeProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        generateQr(value, size);
+        generateQr(size);
     }, [value, size]);
 
-    const generateQr = async (text: string, sz: number) => {
+    const generateQr = async (sz: number) => {
         const canvas = canvasRef.current;
 
         if (!canvas) return;

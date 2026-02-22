@@ -1,8 +1,8 @@
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import QrCode from "../components/common/QrCode";
-import { FaHome, FaPrint, FaPlane, FaUser, FaEnvelope, FaPhone, FaPassport, FaCalendar, FaInfoCircle, FaCheck } from 'react-icons/fa';
-import { MdFlightTakeoff, MdFlightLand, MdEventSeat } from 'react-icons/md';
+import { FaHome, FaPrint, FaPlane, FaUser, FaEnvelope, FaPhone, FaPassport, FaCalendar, FaInfoCircle, FaCheck, FaQrcode, FaArrowRight } from 'react-icons/fa';
+import { MdFlightTakeoff, MdFlightLand, MdEventSeat, MdPayment } from 'react-icons/md';
 import './ConfirmationPage.css';
 import type { BookingData } from "../types/booking";
 import { formatPrice } from "../utils/priceCalculation";
@@ -29,10 +29,10 @@ interface ConfirmationPageProps {
 }
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
-    stripe: '💳 Bankkártya (Stripe)',
-    barion: '🏦 Barion',
-    apple_pay: '🍎 Apple Pay',
-    google_pay: '🔵 Google Pay',
+    stripe: 'Bankkártya (Stripe)',
+    barion: 'Barion',
+    apple_pay: 'Apple Pay',
+    google_pay: 'Google Pay',
 };
 
 const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPageProps) => {
@@ -87,7 +87,7 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                                 {bookingData.paymentMethod && (
                                     <div className="detail-row">
                                         <span className="detail-label">
-                                            💳 Fizetési mód
+                                            <MdPayment /> Fizetési mód
                                         </span>
                                         <span className="detail-value">{paymentLabel}</span>
                                     </div>
@@ -95,7 +95,7 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                             </div>
 
                             <div className="details-section">
-                                <h3 className="section-title">📱 Check-in QR kód</h3>
+                                <h3 className="section-title"><FaQrcode /> Check-in QR kód</h3>
                                 <div className="qr-section">
                                     <QrCode
                                         value={qrValue}
@@ -139,7 +139,7 @@ const ConfirmationPage = ({ bookingData, flight, onBackToHome }: ConfirmationPag
                                         </div>
                                     </div>
 
-                                    <div className="route-arrow">→</div>
+                                    <div className="route-arrow"><FaArrowRight /></div>
 
                                     <div className="route-point">
                                         <MdFlightLand style={{ fontSize: '1.5rem', color: '#2c5282', marginBottom: '0.5rem' }} />
