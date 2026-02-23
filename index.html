@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BKK Live — Budapest Transit</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #12151c;
+    --surface2: #1a1f2a;
+    --border: #252b38;
+    --accent: #e84c3d;
+    --accent2: #f4a234;
+    --blue: #3b82f6;
+    --green: #22c55e;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --subtle: #374151;
+    --metro1: #e84c3d;
+    --metro2: #3b82f6;
+    --metro3: #e8a020;
+    --metro4: #16a34a;
+    --tram: #f4a234;
+    --bus: #3b82f6;
+    --trolley: #8b5cf6;
+    --rail: #64748b;
+    --boat: #06b6d4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    padding: 28px 0 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(10,12,16,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .logo-bkk {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    color: var(--accent);
+    letter-spacing: -1px;
+  }
+
+  .logo-live {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    background: rgba(232,76,61,.12);
+    border: 1px solid rgba(232,76,61,.3);
+    padding: 3px 8px;
+    border-radius: 4px;
+    animation: pulse-border 2s infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { border-color: rgba(232,76,61,.3); }
+    50% { border-color: rgba(232,76,61,.7); }
+  }
+
+  .clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 2px;
+    text-align: right;
+  }
+
+  .clock-date {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 2px;
+    letter-spacing: 1px;
+  }
+
+  /* Search */
+  .search-wrap {
+    padding: 28px 0 20px;
+  }
+
+  .search-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .search-box {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .search-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,76,61,.12);
+  }
+
+  .search-input::placeholder { color: var(--muted); }
+
+  .search-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    padding: 14px 22px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    white-space: nowrap;
+  }
+
+  .search-btn:hover { background: #cf3f30; }
+  .search-btn:active { transform: scale(.97); }
+
+  /* Autocomplete */
+  .autocomplete {
+    position: relative;
+  }
+
+  .autocomplete-list {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    z-index: 200;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+
+  .autocomplete-item:last-child { border-bottom: none; }
+  .autocomplete-item:hover { background: var(--surface); }
+
+  .autocomplete-icon {
+    width: 28px; height: 28px;
+    background: var(--border);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .autocomplete-name { font-weight: 500; font-size: 0.9rem; }
+  .autocomplete-sub { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+
+  /* Quick picks */
+  .quick-picks {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .quick-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .quick-chip:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  /* Results area */
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .results-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: var(--text);
+  }
+
+  .results-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all .2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .refresh-btn:hover { border-color: var(--accent); color: var(--text); }
+  .refresh-btn.spinning svg { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Departures grid */
+  .departures-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+  }
+
+  .group-header:hover { background: var(--surface2); }
+
+  .route-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    min-width: 44px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .route-name {
+    font-weight: 500;
+    font-size: 0.95rem;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .route-direction {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .group-toggle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    transition: transform .2s;
+  }
+
+  .group-toggle.open { transform: rotate(180deg); }
+
+  .departures-list { padding: 0 18px 4px; }
+
+  .departure-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 14px;
+    animation: fadeIn .3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .departure-row:last-child { border-bottom: none; }
+
+  .dep-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.05rem;
+    font-weight: 600;
+    min-width: 52px;
+    color: var(--text);
+  }
+
+  .dep-countdown {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    min-width: 56px;
+    text-align: center;
+  }
+
+  .dep-countdown.soon {
+    background: rgba(232,76,61,.15);
+    color: var(--accent);
+    border: 1px solid rgba(232,76,61,.3);
+  }
+
+  .dep-countdown.near {
+    background: rgba(244,162,52,.12);
+    color: var(--accent2);
+    border: 1px solid rgba(244,162,52,.3);
+  }
+
+  .dep-countdown.later {
+    background: rgba(34,197,94,.1);
+    color: var(--green);
+    border: 1px solid rgba(34,197,94,.25);
+  }
+
+  .dep-destination {
+    flex: 1;
+    font-size: 0.88rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dep-headsign {
+    font-size: 0.82rem;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .dep-platform {
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface2);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+
+  /* Stops list (search results) */
+  .stops-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stop-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stop-card:hover {
+    border-color: var(--accent);
+    background: var(--surface2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  }
+
+  .stop-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+
+  .stop-info { flex: 1; min-width: 0; }
+  .stop-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 3px; }
+  .stop-meta { font-size: 0.75rem; color: var(--muted); }
+
+  .stop-routes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .mini-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Loading / empty states */
+  .state-box {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .state-box .icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: .4;
+  }
+
+  .state-box p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+
+  /* Alerts */
+  .alert-bar {
+    background: rgba(244,162,52,.08);
+    border: 1px solid rgba(244,162,52,.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: var(--accent2);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* Route type colors */
+  .type-metro { background: var(--metro1); color: #fff; }
+  .type-metro2 { background: var(--metro2); color: #fff; }
+  .type-metro3 { background: var(--metro3); color: #000; }
+  .type-metro4 { background: var(--metro4); color: #fff; }
+  .type-tram { background: var(--tram); color: #000; }
+  .type-bus { background: var(--bus); color: #fff; }
+  .type-trolley { background: var(--trolley); color: #fff; }
+  .type-rail { background: var(--rail); color: #fff; }
+  .type-boat { background: var(--boat); color: #fff; }
+  .type-default { background: var(--subtle); color: var(--text); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--subtle); }
+
+  /* Nav tabs */
+  .view-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+
+  .view-tab {
+    flex: 1;
+    padding: 9px 14px;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    transition: all .2s;
+    text-align: center;
+  }
+
+  .view-tab.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .view-tab:not(.active):hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  /* Section divider */
+  .section-pad { padding: 8px 0 28px; }
+
+  /* Error toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 0.85rem;
+    color: var(--text);
+    z-index: 1000;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .3s;
+    max-width: 320px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-color: rgba(232,76,61,.4); }
+
+  @media (max-width: 600px) {
+    .stops-list { grid-template-columns: 1fr; }
+    .clock { font-size: 1.2rem; }
+    .search-box { flex-direction: column; }
+  }
+
+  .hidden { display: none !important; }
+
+  .section-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    padding: 7px 13px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all .2s;
+    margin-bottom: 18px;
+  }
+
+  .back-btn:hover { border-color: var(--text); color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-bkk">BKK</span>
+        <span class="logo-live">● LIVE</span>
+      </div>
+      <div>
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="clock-date" id="clock-date"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- Search area -->
+    <div class="search-wrap">
+      <div class="section-tag">Menetrend keresés</div>
+      <div class="search-box autocomplete" id="search-wrap">
+        <input
+          type="text"
+          class="search-input"
+          id="search-input"
+          placeholder="Keress megállót pl. Keleti, Deák, Blaha…"
+          autocomplete="off"
+        />
+        <button class="search-btn" id="search-btn">Keresés</button>
+        <div class="autocomplete-list hidden" id="autocomplete-list"></div>
+      </div>
+      <div class="quick-picks" id="quick-picks">
+        <span class="quick-chip" data-name="Keleti pályaudvar">🚉 Keleti</span>
+        <span class="quick-chip" data-name="Deák Ferenc tér">🔴 Deák tér</span>
+        <span class="quick-chip" data-name="Blaha Lujza tér">🔵 Blaha</span>
+        <span class="quick-chip" data-name="Kálvin tér">🟡 Kálvin</span>
+        <span class="quick-chip" data-name="Nyugati pályaudvar">🚉 Nyugati</span>
+        <span class="quick-chip" data-name="Astoria">Astoria</span>
+      </div>
+    </div>
+
+    <!-- Stop list view -->
+    <div id="view-stops" class="hidden section-pad">
+      <div class="results-header">
+        <div>
+          <div class="section-tag">Megállók</div>
+          <div class="results-title" id="stop-results-title">Találatok</div>
+        </div>
+      </div>
+      <div class="stops-list" id="stops-list"></div>
+    </div>
+
+    <!-- Departures view -->
+    <div id="view-departures" class="hidden section-pad">
+      <button class="back-btn" id="back-btn">
+        ← Vissza a találatokhoz
+      </button>
+      <div class="results-header">
+        <div>
+          <div class="section-tag">Indulások</div>
+          <div class="results-title" id="dep-title">–</div>
+          <div class="results-sub" id="dep-sub"></div>
+        </div>
+        <button class="refresh-btn" id="refresh-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+            <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/>
+          </svg>
+          Frissítés
+        </button>
+      </div>
+      <div id="alerts-area"></div>
+      <div id="departures-area">
+        <div class="loader"><div class="spinner"></div> Betöltés…</div>
+      </div>
+    </div>
+
+    <!-- Welcome state -->
+    <div id="view-welcome" class="state-box section-pad">
+      <div class="icon">🚇</div>
+      <p>Írj be egy megálló nevet a keresőbe,<br>vagy válassz a gyors linkek közül.</p>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_KEY = 'e67b6e62-cc23-4347-b90f-cb9191c68d02';
+const BASE = 'https://futar.bkk.hu/api/query/v1/ws/otp/api/where';
+
+let currentStopId = null;
+let refreshInterval = null;
+let searchTimeout = null;
+let lastSearchResults = [];
+
+// --- CLOCK ---
+function updateClock() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('hu-HU', { hour12: false });
+  const d = now.toLocaleDateString('hu-HU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('clock').textContent = t;
+  document.getElementById('clock-date').textContent = d;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// --- HELPERS ---
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => { t.className = 'toast'; }, 3500);
+}
+
+function showView(name) {
+  ['welcome','stops','departures'].forEach(v => {
+    document.getElementById('view-' + v).classList.toggle('hidden', v !== name);
+  });
+}
+
+function routeColor(shortName, type) {
+  if (!shortName) return 'type-default';
+  const n = shortName.toUpperCase();
+  if (n === 'M1') return 'type-metro';
+  if (n === 'M2') return 'type-metro2';
+  if (n === 'M3') return 'type-metro3';
+  if (n === 'M4') return 'type-metro4';
+  if (type === 0 || type === 2) return 'type-rail';
+  if (type === 1) {
+    if (n === 'M1') return 'type-metro';
+    if (n === 'M2') return 'type-metro2';
+    if (n === 'M3') return 'type-metro3';
+    if (n === 'M4') return 'type-metro4';
+    return 'type-bus';
+  }
+  if (type === 3) return 'type-bus';
+  if (type === 4 || type === 5) return 'type-boat';
+  if (type === 7) return 'type-tram';
+  if (type === 11) return 'type-trolley';
+  // fallback by number
+  const num = parseInt(n);
+  if (!isNaN(num) && num <= 49) return 'type-tram';
+  if (!isNaN(num) && (num >= 70 && num <= 83)) return 'type-trolley';
+  return 'type-bus';
+}
+
+function routeTypeIcon(type) {
+  const icons = { 0: '🚆', 1: '🚇', 2: '🚆', 3: '🚌', 4: '⛴️', 5: '⛴️', 7: '🚋', 11: '🚎' };
+  return icons[type] || '🚌';
+}
+
+function formatCountdown(secs) {
+  if (secs < 0) secs = 0;
+  if (secs < 60) return secs + ' mp';
+  const m = Math.floor(secs / 60);
+  if (m < 60) return m + ' perc';
+  return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+}
+
+function countdownClass(secs) {
+  if (secs < 120) return 'soon';
+  if (secs < 600) return 'near';
+  return 'later';
+}
+
+function unixToTime(unix) {
+  return new Date(unix * 1000).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+}
+
+// --- API ---
+async function apiFetch(endpoint, params) {
+  const url = new URL(BASE + '/' + endpoint + '.json');
+  url.searchParams.set('key', API_KEY);
+  url.searchParams.set('version', '3');
+  url.searchParams.set('includeReferences', 'true');
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  const r = await fetch(url.toString());
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function searchStops(query) {
+  return apiFetch('search', { query, limit: 20 });
+}
+
+async function getArrivalsForStop(stopId) {
+  return apiFetch('arrivals-and-departures-for-stop', {
+    stopId,
+    minutesBefore: 0,
+    minutesAfter: 90
+  });
+}
+
+// --- SEARCH ---
+async function doSearch(query) {
+  if (!query.trim()) return;
+  document.getElementById('autocomplete-list').classList.add('hidden');
+
+  showView('stops');
+  document.getElementById('stop-results-title').textContent = '"' + query + '" keresése…';
+  document.getElementById('stops-list').innerHTML = '<div class="loader"><div class="spinner"></div> Keresés…</div>';
+
+  try {
+    const data = await searchStops(query);
+    const entries = data?.data?.list || [];
+    lastSearchResults = entries;
+    renderStops(entries, query);
+  } catch(e) {
+    document.getElementById('stops-list').innerHTML = '<div class="state-box"><div class="icon">⚠️</div><p>Hiba a keresés közben.<br>' + e.message + '</p></div>';
+    showToast('Keresési hiba: ' + e.message, 'error');
+  }
+}
+
+function renderStops(entries, query) {
+  const container = document.getElementById('stops-list');
+  // Filter only stops (not routes or trips)
+  const stops = entries.filter(e => e.type === 'stop' || e.stopId || (e.id && e.id.startsWith('BKK_')));
+  
+  document.getElementById('stop-results-title').textContent = stops.length ? stops.length + ' megálló találat' : 'Nincs találat';
+
+  if (!stops.length) {
+    container.innerHTML = '<div class="state-box"><div class="icon">🔍</div><p>Nem találtunk megállót erre: <strong>' + query + '</strong><br>Próbálj más kulcsszót!</p></div>';
+    return;
+  }
+
+  container.innerHTML = stops.map(stop => {
+    const id = stop.id || stop.stopId;
+    const name = stop.name || 'Ismeretlen';
+    const code = stop.code || '';
+    const routeIds = (stop.routeIds || []).slice(0, 6);
+    
+    return `<div class="stop-card" data-stop-id="${id}" data-stop-name="${name}">
+      <div class="stop-icon">🚏</div>
+      <div class="stop-info">
+        <div class="stop-name">${name}</div>
+        <div class="stop-meta">${code ? 'Kód: ' + code : ''}${stop.direction ? ' · ' + stop.direction : ''}</div>
+        ${routeIds.length ? `<div class="stop-routes">${routeIds.map(r => `<span class="mini-badge type-default">${r.replace('BKK_','')}</span>`).join('')}</div>` : ''}
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted);flex-shrink:0"><path d="M9 18l6-6-6-6"/></svg>
+    </div>`;
+  }).join('');
+
+  container.querySelectorAll('.stop-card').forEach(card => {
+    card.addEventListener('click', () => {
+      openStop(card.dataset.stopId, card.dataset.stopName);
+    });
+  });
+}
+
+// --- DEPARTURES ---
+async function openStop(stopId, stopName) {
+  currentStopId = stopId;
+  document.getElementById('dep-title').textContent = stopName;
+  document.getElementById('dep-sub').textContent = stopId;
+  showView('departures');
+  await loadDepartures();
+
+  clearInterval(refreshInterval);
+  refreshInterval = setInterval(loadDepartures, 30000);
+}
+
+async function loadDepartures() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  document.getElementById('alerts-area').innerHTML = '';
+
+  try {
+    const data = await getArrivalsForStop(currentStopId);
+    renderDepartures(data);
+  } catch(e) {
+    document.getElementById('departures-area').innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>Hiba a menetrend lekérésekor.<br>${e.message}</p></div>`;
+    showToast('Hiba: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+function renderDepartures(data) {
+  const area = document.getElementById('departures-area');
+  const alertArea = document.getElementById('alerts-area');
+
+  const entry = data?.data?.entry;
+  const refs = data?.data?.references || {};
+  if (!entry) {
+    area.innerHTML = '<div class="state-box"><div class="icon">🚏</div><p>Nincs elérhető menetrendadat.</p></div>';
+    return;
+  }
+
+  const stopTimes = entry.stopTimes || [];
+  const now = Math.floor(Date.now() / 1000);
+
+  // Alerts
+  const alertIds = entry.situationIds || [];
+  if (alertIds.length) {
+    const situations = refs.situations || {};
+    alertArea.innerHTML = alertIds.slice(0,3).map(id => {
+      const sit = situations[id];
+      const txt = sit?.summary?.someTranslation?.[0]?.text || sit?.description?.someTranslation?.[0]?.text || 'Figyelmeztetés aktív';
+      return `<div class="alert-bar">⚠️ ${txt}</div>`;
+    }).join('');
+  }
+
+  if (!stopTimes.length) {
+    area.innerHTML = '<div class="state-box"><div class="icon">🕐</div><p>Jelenleg nincsenek közelgő indulások.</p></div>';
+    return;
+  }
+
+  // Group by route + headsign
+  const groups = {};
+  const trips = refs.trips || {};
+  const routes = refs.routes || {};
+
+  stopTimes.forEach(st => {
+    const trip = trips[st.tripId] || {};
+    const routeId = trip.routeId || '';
+    const route = routes[routeId] || {};
+    const headsign = st.headsign || trip.tripHeadsign || '–';
+    const key = routeId + '|' + headsign;
+
+    if (!groups[key]) {
+      groups[key] = {
+        routeId, route, headsign,
+        shortName: route.shortName || routeId.replace('BKK_',''),
+        longName: route.longName || '',
+        type: route.type,
+        times: []
+      };
+    }
+
+    const depTime = st.predictedDepartureTime || st.departureTime || st.arrivalTime || 0;
+    const secs = depTime - now;
+    if (secs > -30) {
+      groups[key].times.push({ depTime, secs, st });
+    }
+  });
+
+  const sortedGroups = Object.values(groups).filter(g => g.times.length > 0);
+  sortedGroups.sort((a, b) => (a.times[0]?.secs || 0) - (b.times[0]?.secs || 0));
+
+  if (!sortedGroups.length) {
+    area.innerHTML = '<div class="state-box"><div class="icon">🕐</div><p>Nincs közelgő indulás a következő 90 percben.</p></div>';
+    return;
+  }
+
+  area.innerHTML = sortedGroups.map((g, idx) => {
+    const colorClass = routeColor(g.shortName, g.type);
+    const icon = routeTypeIcon(g.type);
+    const isFirst = idx === 0;
+
+    const rows = g.times.slice(0, 5).map(t => {
+      const timeStr = unixToTime(t.depTime);
+      const secs = Math.max(0, t.secs);
+      const cdClass = countdownClass(secs);
+      const cdText = secs < 30 ? 'Indul' : formatCountdown(secs);
+      const realtime = t.st.predictedDepartureTime ? '● ' : '';
+      return `<div class="departure-row">
+        <div class="dep-time">${timeStr}</div>
+        <div class="dep-countdown ${cdClass}">${cdText}</div>
+        <div class="dep-destination">
+          <div class="dep-headsign">${g.headsign}</div>
+          ${realtime ? '<div style="font-size:.7rem;color:var(--green);margin-top:1px">' + realtime + 'Valós idejű</div>' : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="departures-group">
+      <div class="group-header" data-idx="${idx}">
+        <div class="route-badge ${colorClass}">${g.shortName}</div>
+        <div style="flex:1;min-width:0">
+          <div class="route-name">${g.headsign}</div>
+          ${g.longName ? `<div class="route-direction">${g.longName}</div>` : ''}
+        </div>
+        <div class="dep-countdown ${countdownClass(g.times[0]?.secs || 9999)}" style="flex-shrink:0">
+          ${g.times[0]?.secs < 30 ? 'Indul' : formatCountdown(g.times[0]?.secs || 0)}
+        </div>
+        <div class="group-toggle ${isFirst ? 'open' : ''}">▾</div>
+      </div>
+      <div class="departures-list" ${isFirst ? '' : 'style="display:none"'}>${rows}</div>
+    </div>`;
+  }).join('');
+
+  // Toggle groups
+  area.querySelectorAll('.group-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const toggle = h.querySelector('.group-toggle');
+      const list = h.nextElementSibling;
+      const open = toggle.classList.toggle('open');
+      list.style.display = open ? '' : 'none';
+    });
+  });
+}
+
+// --- AUTOCOMPLETE ---
+async function doAutocomplete(query) {
+  if (query.length < 2) {
+    document.getElementById('autocomplete-list').classList.add('hidden');
+    return;
+  }
+  try {
+    const data = await searchStops(query);
+    const stops = (data?.data?.list || []).filter(e => e.type === 'stop' || e.stopId);
+    renderAutocomplete(stops.slice(0, 8));
+  } catch(e) {}
+}
+
+function renderAutocomplete(stops) {
+  const list = document.getElementById('autocomplete-list');
+  if (!stops.length) { list.classList.add('hidden'); return; }
+
+  list.innerHTML = stops.map(stop => {
+    const id = stop.id || stop.stopId;
+    const name = stop.name || 'Ismeretlen';
+    return `<div class="autocomplete-item" data-stop-id="${id}" data-stop-name="${name}">
+      <div class="autocomplete-icon">🚏</div>
+      <div>
+        <div class="autocomplete-name">${name}</div>
+        ${stop.code ? `<div class="autocomplete-sub">Kód: ${stop.code}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  list.classList.remove('hidden');
+
+  list.querySelectorAll('.autocomplete-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.getElementById('search-input').value = item.dataset.stopName;
+      list.classList.add('hidden');
+      openStop(item.dataset.stopId, item.dataset.stopName);
+    });
+  });
+}
+
+// --- EVENT LISTENERS ---
+const searchInput = document.getElementById('search-input');
+const searchBtn = document.getElementById('search-btn');
+
+searchInput.addEventListener('input', e => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => doAutocomplete(e.target.value), 300);
+});
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    document.getElementById('autocomplete-list').classList.add('hidden');
+    doSearch(searchInput.value);
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('autocomplete-list').classList.add('hidden');
+  }
+});
+
+searchBtn.addEventListener('click', () => {
+  document.getElementById('autocomplete-list').classList.add('hidden');
+  doSearch(searchInput.value);
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#search-wrap')) {
+    document.getElementById('autocomplete-list').classList.add('hidden');
+  }
+});
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  clearInterval(refreshInterval);
+  if (lastSearchResults.length) {
+    showView('stops');
+  } else {
+    showView('welcome');
+  }
+});
+
+document.getElementById('refresh-btn').addEventListener('click', loadDepartures);
+
+document.querySelectorAll('.quick-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    searchInput.value = chip.dataset.name;
+    doSearch(chip.dataset.name);
+  });
+});
+
+// Live countdown update every 5s
+setInterval(() => {
+  if (document.getElementById('view-departures').classList.contains('hidden')) return;
+  document.querySelectorAll('.departure-row').forEach(row => {
+    // Just reload every 30s via interval — lightweight enough
+  });
+}, 5000);
+</script>
+</body>
+</html>
